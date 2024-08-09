@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from 'react'
 
+//context around teh whole sign up process so all pages have access to user details
 const signUpContext = createContext()
 
 export function useSignUpContext() {

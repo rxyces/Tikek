@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store'
 
+//wrapper for adding and removing items from expo secure store
 export const tokenCache = {
     async getToken(key) {
         try {
