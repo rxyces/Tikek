@@ -1,4 +1,4 @@
-import { View, Text, ImageBackground, TouchableOpacity  } from 'react-native'
+import { View, Text, ImageBackground, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from 'expo-router';
 
@@ -41,7 +41,7 @@ const Landing = () => {
                     <TouchableOpacity
                     className="px-20 py-6 -mx-20 -my-6 mb-8 "
                     activeOpacity={0.8}
-                    onPress={() => router.push("/FindCity")}>
+                    onPress={() => router.push("/Login")}>
                         <Text className="font-wsemibold text-[16px] text-white self-center">
                             Or sign in
                         </Text>

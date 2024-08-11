@@ -6,11 +6,11 @@ const signUpContext = createContext()
 export function useSignUpContext() {
     const context = useContext(signUpContext);
     
-        if (!context) {
-        throw new Error("useContext must be contained within signUpContext");
-        }
-    
-        return context;
+    if (!context) {
+        throw new Error("useSignUpContext must be contained within signUpContext");
+    }
+
+    return context;
 }
 
 const SignUpContext = ( {children}) => {

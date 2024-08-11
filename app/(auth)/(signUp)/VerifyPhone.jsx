@@ -103,7 +103,7 @@ const VerifyPhone = () => {
                 </Text>
                 <View className="max-w-[250px] mt-2">
                     <Text className="font-wregular text-[#ADB3C1] text-[16px] text-center">
-                        Please enter the 4 digit number sent to
+                        Please enter the 4 digit code sent to
                         <Text className="font-wsemibold text-[#C1BBF6] text-[16px] text-center">
                             {" " + formattedPhoneNum}
                         </Text>

@@ -24,4 +24,13 @@ export const tokenCache = {
             return
         }
         },
-    }
+    async deleteToken(key) {
+        try {
+            await SecureStore.deleteItemAsync(key);
+            console.log(`${key} has been deleted 🗑️\n`);
+        } catch (error) {
+            console.error('SecureStore delete item error:', error);
+            return
+        }
+    },
+}
