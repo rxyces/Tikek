@@ -2,19 +2,22 @@ import { View, Text, Keyboard, StyleSheet, Pressable, ScrollView } from 'react-n
 import { router } from 'expo-router'
 import { useState, useEffect } from 'react';
 import { OtpInput } from "react-native-otp-entry";
-import { useSignUp } from '@clerk/clerk-expo'
+import { supabase } from '../../../lib/supabase';
 
 import AuthButton from '../../../components/AuthButton';
-import { useSignUpContext } from '../../../context/SignUpContext';
 import Error from '../../../components/Error';
+import { useSignUpContext } from '../../../context/SignUpContext';
+import { useAuthContext } from '../../../context/Auth';
 
 const VerifyPhone = () => {
+    // contexts
     const { formattedPhoneNum } = useSignUpContext()
+    const { setIsAuthenticated } = useAuthContext()
+
     const [smsTimer, setSmsTimer] = useState(0);
     const [clock, setClock ] = useState()
     const [otpCode, setOtpCode] = useState("");
     const [errorText, setErrorText] = useState("");
-    const { signUp } = useSignUp()
 
     //timer for when to resend code
     function startTimer() {
@@ -38,52 +41,48 @@ const VerifyPhone = () => {
             };
     }, [clock]);
 
-    //clerk resend code
+    //supabase resend code
     const resendCode = async () => {
-        try {
-            await signUp.preparePhoneNumberVerification()
+        const { error } = await supabase.auth.resend({
+            type: "sms",
+            phone: formattedPhoneNum
+        })
+        if (!error) {
             setErrorText("")
             startTimer()
         }
-        catch (error) {
-            if (error.status == 429) {
-                setErrorText("Please wait 30s to receive your code")
-            }
-            else {
-                console.error(JSON.stringify(error, null, 2))
-                setErrorText("Unexpected error, please try again later")
-            }
+        else {
+            switch (error.code) {
+                case "over_sms_send_rate_limit":
+                    setErrorText("Please wait 60s to receive your code")
+                    break
+                case "over_request_rate_limit":
+                    setErrorText("Too many requests, try again later")
+                    break
+                default:
+                    console.error(JSON.stringify(error, null, 2))
+                    setErrorText("Unexpected error, please try again later")
+                    break
             }
         }
+    }
 
-    //clerk submit code
+    //supabase submit code
     const submitCode = async () => {
-        try {
-            const phoneVeriyResp = await signUp.attemptPhoneNumberVerification({code: otpCode});
-            setErrorText("")
-
-            //if missing requirements means the code was correct and proceed to next page
-            if (phoneVeriyResp.status === "missing_requirements") {
-                router.replace("/AccountDetails")
-            }
-            else {
-                console.error("Did not return missing_requirments on phone signup")
-                setErrorText("Unexpected error, please try again later")
-            }
-        } catch (error) {
-            switch (error.errors[0].code) {
-                case "verification_expired":
-                    setErrorText("Verification expired, try again")
-                    await new Promise(r => setTimeout(r, 1000))
-                    router.back()
-                    break
-                case "form_code_incorrect":
-                    setErrorText("Incorrect code, try again")
-                    break
-                case "verification_failed":
-                    setErrorText("Too many failed attempts, try again")
-                    await new Promise(r => setTimeout(r, 1000))
-                    router.back()
+        setErrorText("")
+        const { data, error } = await supabase.auth.verifyOtp({
+            phone: formattedPhoneNum, 
+            token: otpCode,
+            type: 'sms'
+        });
+        if (!error) {
+            setIsAuthenticated(true)
+            router.replace("/")
+        }
+        else {
+            switch (error.code) {
+                case "otp_expired":
+                    setErrorText("Code expired, please try again")
                     break
                 default:
                     console.error(JSON.stringify(error, null, 2))
@@ -95,7 +94,7 @@ const VerifyPhone = () => {
 
     return (
         <ScrollView contentContainerStyle={{ flex: 1 }}>
-            <View className="flex-1 items-center mt-4">
+            <View className="flex-1 items-center mt-2">
                 
                 {/* text at the top */}
                 <Text className="font-wsemibold text-white text-[30px]">
@@ -110,7 +109,7 @@ const VerifyPhone = () => {
                     </Text>
                 </View>
                 
-                {/* error above the opt input code */}
+                {/* error above the otp input code */}
                 <View className="mt-24">
                     <Error errorText={errorText}/>
                         <OtpInput 

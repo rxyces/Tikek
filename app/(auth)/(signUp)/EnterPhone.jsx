@@ -2,7 +2,7 @@ import { View, Text, Pressable, TextInput, ScrollView } from 'react-native'
 import { Image } from 'expo-image';
 import { router } from 'expo-router'
 import { useState } from 'react';
-import { useSignUp } from '@clerk/clerk-expo'
+import { supabase } from '../../../lib/supabase';
 
 import CountryModal from '../../../components/CountryModal';
 import DownSelector from '../../../assets/svgs/down_selector.svg'
@@ -21,40 +21,29 @@ const EnterPhone = () => {
 
     //sign up data context and clerk sign up object used to initiate sign up
     const { phoneNum, setPhoneNum, selectedCountryNumber, setSelectedCountryNumber, formattedPhoneNum, setFormattedPhoneNum } = useSignUpContext();
-    const { signUp } = useSignUp()
 
     //process submitting phone num
     const onPress = async () => {
-        //show error if phone num isnt in the required clerk format
+        //check if phone num is even valid
         if (phoneNum.replace(/\s+/g, '').length < 7 || phoneNum.replace(/\s+/g, '').length > 15) {
             setErrorText("Invalid phone number")
         }
         else {
             setErrorText("")
-            try {
-                //initate sms sign up clerk
-                await signUp.create({
-                    phoneNumber: formattedPhoneNum,
-                })
-                
-                //send sms message
-                await signUp.preparePhoneNumberVerification()
+            const { error } = await supabase.auth.signInWithOtp({
+                phone: formattedPhoneNum,
+            });
+            if (!error) {
                 setErrorText("")
                 router.push("/VerifyPhone")
-    
-            } catch (error) {
-                switch (error.errors[0].code) {
-                    case "phone_number_exists_code":
-                        setErrorText("Phone number already exists")
-                        break
-                    case "form_identifier_exists":
-                        setErrorText("Phone number already exists")
-                        break
-                    case "unsupported_country_code":
-                        setErrorText("This country code is not currecntly supported")
-                        break
-                    case "form_param_format_invalid":
+            }
+            else {
+                switch (error.code) {
+                    case "sms_send_failed":
                         setErrorText("Invalid phone number")
+                        break
+                    case "sms_send_failed":
+                        setErrorText("Too many codes requested, try again later")
                         break
                     default:
                         console.error(JSON.stringify(error, null, 2))
@@ -63,13 +52,12 @@ const EnterPhone = () => {
                 }
             }
         }
-        
     }
 
     const onEnterPhoneNum = (num) => {
         setPhoneNum(num)
 
-        //for the clerk format the first number of the actual number cannot be 0 so set from 1st number onwards
+        //for the correct format the first number of the actual number cannot be 0 so set from 1st number onwards
         if (num && num.length > 0 && num[0] == "0") {
             setFormattedPhoneNum(selectedCountryNumber + num.substring(1))
         }
@@ -80,7 +68,7 @@ const EnterPhone = () => {
 
     return (
         <ScrollView contentContainerStyle={{ flex: 1 }}>
-            <View className="flex-1 items-center mt-4">
+            <View className="flex-1 items-center mt-2">
 
                 {/* background image */}
                 <View className="h-[135px] w-full">

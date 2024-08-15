@@ -108,7 +108,7 @@ const Login = () => {
     return (
         <ScrollView contentContainerStyle={{ flex: 1 }}>
             
-            <View className="flex-1 items-center mt-4">
+            <View className="flex-1 items-center mt-2">
 
                 {/* background image */}
                 <View className="h-[100px] w-full">
@@ -120,7 +120,7 @@ const Login = () => {
                 </View>
                 
                 {/* sign up text */}
-                <View className="items-center mt-8 space-y-4">
+                <View className="items-center mt-6 space-y-4">
                     <Text className="font-wsemibold text-[30px] text-white">
                         Welcome back to Qswap
                     </Text>
@@ -185,10 +185,19 @@ const Login = () => {
                             </Pressable>
                         </View>
                     </View>
-
                 </View>
 
-                <View className="flex-1 justify-end mb-28 items-center">
+                <Pressable
+                    onPress={() => {}}
+                    style={({pressed}) => ({opacity: pressed ? 0.8 : 1})}>
+                        <View className="px-16 py-4 -mx-16 -my-4 mt-4">
+                            <Text className="font-wsemibold text-[#C1BBF6] text-[16px] text-center">
+                                Forgot password?
+                            </Text>
+                        </View>
+                </Pressable>
+
+                <View className="flex-1 justify-end mb-20 items-center">
                     <Error errorText={errorText}/>
                     <AuthButton
                         onPress={handleFormSubmit}

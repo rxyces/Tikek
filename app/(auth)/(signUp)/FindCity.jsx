@@ -1,12 +1,12 @@
 import { View, Text, FlatList, Pressable, TextInput } from 'react-native'
 import { useState } from 'react'
-import { useClerk } from '@clerk/clerk-expo'
 import { router } from 'expo-router'
+import { supabase } from '../../../lib/supabase'
 
-import { tokenCache } from '../../../context/TokenCache'
-import Error, { errorCleanup } from '../../../components/Error'
+import Error from '../../../components/Error'
 import SearchIcon from "../../../assets/svgs/search_icon.svg"
 import AuthButton from '../../../components/AuthButton'
+import { useAuthContext } from '../../../context/Auth'
 
 const CITYDATA = [
     {
@@ -73,8 +73,8 @@ const FindCity = () => {
     const [selectedCity, setSelectedCity] = useState("")
     const [filteredCities, setFilteredCities] = useState(CITYDATA)
     const [errorText, setErrorText] = useState("")
-    const { signOut } = useClerk()
 
+    const { setCompletedCity } = useAuthContext()
 
     //each city component
     const City = ({ title }) => {
@@ -113,38 +113,39 @@ const FindCity = () => {
         }
         else {
             setErrorText("")
-            try {
-                const existingSettingsString = await tokenCache.getToken("userSettings");
-                
-                //check the previous step (sign up) has been completed by having user settings already saved
-                if (existingSettingsString) {
-                    const existingSettings = JSON.parse(existingSettingsString);
-                
-                    const updatedSettings = {
-                        ...existingSettings,
-                        city: selectedCity
-                    };
-                    
-                
-                    // Save the updated settings back to SecureStore
-                    await tokenCache.saveToken("userSettings", JSON.stringify(updatedSettings));
+
+            //get new session to store in session state
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+            if (sessionError) {
+                setErrorText("Failed retrieving session")
+                console.error(JSON.stringify(sessionError))
+            }
+            else {
+                //add city data to db
+                const updates = {
+                    id: sessionData.session.user.id,
+                    city: selectedCity,
+                    updated_at: new Date(),
+                }
+                const { error: updateDBError } = await supabase.from("profiles").upsert(updates)
+                if (updateDBError) {
+                    setErrorText("Failed updating database")
+                    console.error(JSON.stringify(updateDBError))
+                }
+                else {
+                    //update states to indicate a fully completed sign up 
+                    setCompletedCity(true)
                     if (router.canDismiss())
                         router.dismissAll()
                     router.replace("/")
-                } else {
-                    setErrorText("User settings do not exist, restart the sign in process");
-                    await errorCleanup(signOut)
-
                 }
-            } catch (error) {
-                console.error("Error updating user settings:", error);
-            }
             }
         }
+    }
 
     return (
         // text at top
-        <View className="flex-1 items-center mt-4">  
+        <View className="flex-1 items-center mt-2">  
             <Text className="font-wsemibold text-white text-[30px]">
                 Find your city
             </Text>

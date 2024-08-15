@@ -22,8 +22,8 @@ const SignUpLayout = () => {
                     >
                     <Stack.Screen name="EnterPhone" />
                     <Stack.Screen name="VerifyPhone"/>
-                    <Stack.Screen name="AccountDetails"/>
-                    <Stack.Screen name="FindCity"/>
+                    <Stack.Screen name="AccountDetails" options={{ headerLeft: () => (<HeaderBackButton signOut={true} />) }}/>
+                    <Stack.Screen name="FindCity" options={{ headerLeft: () => (<HeaderBackButton signOut={true} />) }}/>
                 </Stack>
             </TouchableWithoutFeedback>
         </SignUpContext>

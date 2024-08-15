@@ -1,10 +1,10 @@
 import { View, Text, ScrollView, TextInput, Pressable } from 'react-native'
 import { useState } from 'react'
-import { useSignUp } from '@clerk/clerk-expo'
 import { router } from 'expo-router'
+import { supabase } from '../../../lib/supabase'
 
 import { useSignUpContext } from '../../../context/SignUpContext'
-import { tokenCache } from '../../../context/TokenCache'
+import { useAuthContext } from '../../../context/Auth'
 import EmailIcon from "../../../assets/svgs/email_icon.svg"
 import NameIcon from "../../../assets/svgs/name_icon.svg"
 import PasswordIcon from "../../../assets/svgs/password_icon.svg"
@@ -13,10 +13,12 @@ import AuthButton from '../../../components/AuthButton'
 import Error from '../../../components/Error'
 
 const AccountDetails = () => {
-    const { emailAddress, setEmailAddress, formattedPhoneNum, fullName, setFullName, password, setPassword } = useSignUpContext()
+    //contexts
+    const { emailAddress, setEmailAddress, fullName, setFullName, password, setPassword } = useSignUpContext()
+    const { setCompletedEmail } = useAuthContext()
+
     const [secureText, setSecureText] = useState(true);
     const [errorText, setErrorText] = useState("");
-    const { signUp, setActive } = useSignUp()
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     // finish creating account with clerk
@@ -32,44 +34,38 @@ const AccountDetails = () => {
         }
         else {
             setErrorText("")
-            const nameParts = fullName.trim().split(/\s+/)
-
-            // submit full details to clerk
-            try {
-                await signUp.update({
-                    emailAddress: emailAddress,
-                    password: password,
-                    firstName: nameParts[0],
-                    lastName: nameParts[nameParts.length - 1],
-                })
-
-                if (signUp.status === "complete") {
-                    // save session to device
-                    await setActive({ session: signUp.createdSessionId })
-
-                    // save user settings to device
-                    const userSettings = {
-                        "formattedPhoneNum": formattedPhoneNum,
-                        "emailAddress": emailAddress,
-                        "fullName": fullName,
-                    }
-                    await tokenCache.saveToken("userSettings", JSON.stringify(userSettings))
-                    
-                    // proceed to find city page
-                    router.dismissAll()
-                    router.replace("/FindCity")
+            const {data: updateUserData, error: updateUserError } = await supabase.auth.updateUser({
+                email: emailAddress,
+                password: password,
+            })
+            if (!updateUserError) {
+                //populate db, add name
+                const updates = {
+                    id: updateUserData.user.id,
+                    full_name: fullName,
+                    updated_at: new Date(),
+                }
+                const { error: updateDBError } = await supabase.from("profiles").upsert(updates)
+                if (updateDBError) {
+                    setErrorText("Failed updating database")
+                    console.error(JSON.stringify(updateDBError))
                 }
                 else {
-                    console.error(JSON.stringify(signUp, null, 2))
-                    setErrorText("Unexpected error, please try again later")
-                }
-            } catch (error) {
-                switch (error.errors[0].code) {
-                    case "form_password_pwned":
-                        setErrorText("Password has been found in a data breach, try again using a different password")
+                    // proceed to find city page
+                    setCompletedEmail(true)
+                    if (router.canDismiss()) {
+                        router.dismissAll()
+                    }
+                    router.replace("/FindCity")
+                    }
+            }
+            else {
+                switch (updateUserError.code) {
+                    case "weak_password":
+                        setErrorText("Weak password, try again")
                         break
                     default:
-                        console.error(JSON.stringify(error, null, 2))
+                        console.error(JSON.stringify(updateUserError, null, 2))
                         setErrorText("Unexpected error, please try again later")
                         break
                 }
@@ -79,7 +75,7 @@ const AccountDetails = () => {
 
     return (
         <ScrollView contentContainerStyle={{ flex: 1 }}>
-            <View className="flex-1 items-center mt-4">
+            <View className="flex-1 items-center mt-2">
 
                 {/* text at the top */}
                 <Text className="font-wsemibold text-white text-[30px]">

@@ -1,21 +1,20 @@
 import { SplashScreen, Stack } from 'expo-router'
 import { useFonts } from "expo-font";
 import { useEffect } from 'react';
-import { View } from 'react-native'
+import { View, AppState } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
-import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo'
-import { tokenCache } from '../context/TokenCache';
+import { supabase } from '../lib/supabase';
+
+import AuthContext from '../context/Auth';
 
 
-//clerk api key
-const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
-
-//throw error if key not found
-if (!publishableKey) {
-    throw new Error(
-        'Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env'
-    );
-}
+AppState.addEventListener('change', (state) => {
+    if (state === 'active') {
+        supabase.auth.startAutoRefresh()
+    } else {
+        supabase.auth.stopAutoRefresh()
+    }
+})
 
 SplashScreen.preventAutoHideAsync();
 
@@ -36,17 +35,15 @@ const RootLayout = () => {
     
     if (!fontsLoaded && !error) return null;
 
+    
+
     return (
-        //clerk wrapper to provide context to whole app as this is the entry point layout
-        <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-            {/* clerk loaded makes sure its been loaded without having to check it exists */}
-            <ClerkLoaded>
-                <View className="h-full bg-[#131316]">
-                    <Stack screenOptions={{headerShown: false, contentStyle: { backgroundColor: "#131316"}}}/>
-                </View>
-                <StatusBar style="light"/>
-            </ClerkLoaded>  
-        </ClerkProvider>
+        <AuthContext>
+            <View className="h-full bg-[#131316]">
+                <Stack screenOptions={{headerShown: false, contentStyle: { backgroundColor: "#131316"}}}/>
+            </View>
+            <StatusBar style="light"/>
+        </AuthContext>
     )
 }
 

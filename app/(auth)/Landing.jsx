@@ -16,7 +16,7 @@ const Landing = () => {
             <SafeAreaView className="flex-1 items-center"> 
 
                 {/* //title */}
-                <Text className="font-rbold text-[32px] text-white mt-4">
+                <Text className="font-rbold text-[32px] text-white mt-2">
                     Qswap
                 </Text>
 
