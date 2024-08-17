@@ -1,7 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
+import { asyncStorage } from "./Store";
+
 const authContext = createContext()
+const resetKey = "RESETPASSWORD"
 
 export function useAuthContext() {
     const context = useContext(authContext);
@@ -15,6 +18,7 @@ export function useAuthContext() {
 
 // context to provide session data to whole app
 const AuthContext = ( { children }) => {
+    const [isResettingPassword, setIsResettingPassword] = useState(false)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [isLoaded, setIsLoaded] = useState(false)
     const [completedEmail, setCompletedEmail] = useState(false)
@@ -26,6 +30,7 @@ const AuthContext = ( { children }) => {
                 completedEmail: false,
                 completedCity: false,
                 isAuthenticated: false,
+                isResettingPassword: false,
             }
             const {error: getUserError} = await supabase.auth.getUser()
             if (!getUserError) {
@@ -34,6 +39,11 @@ const AuthContext = ( { children }) => {
 
                     completionData.isAuthenticated = true // means user exists at least in auth db now need to check if they have finished sign up or are they just logging in
                     
+                    asyncStorage.getItem(resetKey)
+                    .then(value => {
+                        if (value == "true") completionData.isResettingPassword = true
+                    })
+
                     //checks if sign up has been fully completed
                     if (data.user.new_email || data.user.email) completionData.completedEmail = true //else email part hasnt been finished so neither will the city
 
@@ -61,8 +71,23 @@ const AuthContext = ( { children }) => {
             setCompletedEmail(data.completedEmail)
             setCompletedCity(data.completedCity)
             setIsAuthenticated(data.isAuthenticated)
+            setIsResettingPassword(data.isResettingPassword)
             setIsLoaded(true)
         })
+        const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === "SIGNED_OUT") {
+                console.log("signed out")
+                setIsAuthenticated(false)
+                setCompletedEmail(false)
+                setCompletedCity(false)
+                setIsResettingPassword(false)
+                await asyncStorage.clearAll(); 
+            }
+        })
+
+        return () => {
+            data.subscription.unsubscribe()
+        }
         
     }, [isAuthenticated])
 
@@ -72,6 +97,7 @@ const AuthContext = ( { children }) => {
             isLoaded, setIsLoaded,
             completedEmail, setCompletedEmail,
             completedCity, setCompletedCity,
+            isResettingPassword, setIsResettingPassword,
         }}>
         {children}
         </authContext.Provider>

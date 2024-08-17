@@ -19,19 +19,24 @@ const AccountDetails = () => {
 
     const [secureText, setSecureText] = useState(true);
     const [errorText, setErrorText] = useState("");
+    const [passwordStrength, setPasswordStrength] = useState(0);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     // finish creating account with clerk
     const handleFormSubmit = async () => {
+
         // test if email is even valid
         if (!emailRegex.test(emailAddress)) {
             setErrorText("Invalid email, try again")
         }
-
         // make sure the name is actually entered 
         else if (fullName.trim().split(/\s+/).length < 2 ){
             setErrorText("Full name must consist of first name and last name")
         }
+        else if (passwordStrength != 5) {
+            setErrorText("Weak password, try again")
+        }
+
         else {
             setErrorText("")
             const {data: updateUserData, error: updateUserError } = await supabase.auth.updateUser({
@@ -153,7 +158,7 @@ const AccountDetails = () => {
 
                         {/* password strength meter */}
                         <View className="mt-4 items-center">
-                            <PasswordStrengthMeter password={password}/>
+                            <PasswordStrengthMeter password={password} passwordStrength={passwordStrength} setPasswordStrength={setPasswordStrength}/>
                         </View>
                     </View>
 
@@ -167,7 +172,7 @@ const AccountDetails = () => {
                         text="Sign up"
                         bgColor="#791DF3"
                         shadowColor="#8983F3"
-                        disabled={fullName.length == 0 || emailAddress.length == 0 || password.length == 0 ? true : false}/>
+                        disabled={fullName.length == 0 || emailAddress.length == 0 || passwordStrength !== 5 ? true : false}/>
                     <Text className="text-center font-wregular text-[12px] text-[#60697B] max-w-[240px] mt-8">
                         By continuing you're indicating that you accept our
                         <Text className="text-[#C1BBF6] underline">

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Animated, { useSharedValue, withTiming, Easing  } from 'react-native-reanimated';
 
 
-const PasswordStrengthMeter = ( { password }) => {
+const PasswordStrengthMeter = ( { password, passwordStrength, setPasswordStrength }) => {
     const initialCriteria = {
         tooShort: "Too short",
         containsLowercase: "Must contain lowercase",
@@ -13,7 +13,6 @@ const PasswordStrengthMeter = ( { password }) => {
     };
 
     const [criteria, setCriteria] = useState(initialCriteria);
-    const [passwordStrength, setPasswordStrength] = useState(0)
 
     //aniamtion values
     const width = useSharedValue("0%")

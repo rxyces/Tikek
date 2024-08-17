@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, TextInput, Pressable } from 'react-native'
 import { Image } from 'expo-image';
-import { useSignIn } from '@clerk/clerk-expo';
 import { router } from 'expo-router';
+import { supabase } from '../../../lib/supabase';
 
 import { useSignInContext } from '../../../context/SignInContext';
+import { useAuthContext } from '../../../context/Auth';
 import AuthButton from '../../../components/AuthButton';
 import Error from '../../../components/Error';
 import LoginPhoneIcon from "../../../assets/svgs/login_phone_icon.svg"
@@ -24,7 +25,7 @@ const Login = () => {
 
     // defining contexts
     const { phoneNum, setPhoneNum, selectedCountryNumber, setSelectedCountryNumber, formattedPhoneNum, setFormattedPhoneNum } = useSignInContext();
-    const { signIn } = useSignIn()
+    const { setIsAuthenticated } = useAuthContext();
 
     // func for taking phone number input
     const onEnterPhoneNum = (num) => {
@@ -70,30 +71,55 @@ const Login = () => {
         
         else {
             setErrorText("")
-            try {
-                const signInAttempt  = await signIn.create({
-                    identifier: formattedPhoneNum,
-                    strategy: "password",
-                    password: password,
-                })
-                if (signInAttempt.status == "complete") {
-                    await setActive({ session: signInAttempt.createdSessionId })
-                    if (router.canDismiss()) {
-                        router.dismissAll()
-                    }
-                    router.replace("/")
+            const { data, error } = await supabase.auth.signInWithPassword({
+                phone: formattedPhoneNum,
+                password: password,
+            })
+            if (!error) {
+                setIsAuthenticated(true)
+                if (router.canDismiss()) {
+                    router.dismissAll()
                 }
+                router.replace("/")
             }
-            catch (error) {
-                switch (error.errors[0].code) {
-                    case "form_param_format_invalid":
-                        setErrorText("No account associated with this number")
+            else {
+                if (error.name == "AuthApiError") {
+                    setErrorText("Invalid phone or password")
+                }
+                else {
+                    switch (error.code) {
+                        default:
+                            console.error(JSON.stringify(error, null, 2))
+                            setErrorText("Unexpected error, please try again later")
+                            break
+                    }
+                }
+                
+            }
+        }
+    }
+    
+    const handleResetPassword = async () => {
+        //check if phone num is even valid
+        if (phoneNum.replace(/\s+/g, '').length < 7 || phoneNum.replace(/\s+/g, '').length > 15) {
+            setErrorText("Invalid phone number")
+        }
+        else {
+            setErrorText("")
+            const { error } = await supabase.auth.signInWithOtp({
+                phone: formattedPhoneNum,
+            });
+            if (!error) {
+                setErrorText("")
+                router.push("/VerifyIdentity")
+            }
+            else {
+                switch (error.code) {
+                    case "sms_send_failed":
+                        setErrorText("Invalid phone number")
                         break
-                    case "form_password_incorrect":
-                        setErrorText("Incorrect password, try again")
-                        break
-                    case "session_exists":
-                        setErrorText("Your are already logged in, restart")
+                    case "sms_send_failed":
+                        setErrorText("Too many codes requested, try again later")
                         break
                     default:
                         console.error(JSON.stringify(error, null, 2))
@@ -103,7 +129,6 @@ const Login = () => {
             }
         }
     }
-    
 
     return (
         <ScrollView contentContainerStyle={{ flex: 1 }}>
@@ -188,7 +213,7 @@ const Login = () => {
                 </View>
 
                 <Pressable
-                    onPress={() => {}}
+                    onPress={handleResetPassword}
                     style={({pressed}) => ({opacity: pressed ? 0.8 : 1})}>
                         <View className="px-16 py-4 -mx-16 -my-4 mt-4">
                             <Text className="font-wsemibold text-[#C1BBF6] text-[16px] text-center">

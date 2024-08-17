@@ -21,6 +21,8 @@ const SignUpLayout = () => {
                     }}
                     >
                     <Stack.Screen name="Login" />
+                    <Stack.Screen name="VerifyIdentity" />
+                    <Stack.Screen name="ResetPassword" options={{ headerLeft: () => (<HeaderBackButton signOut={true} />) }}/>
                 </Stack>
             </TouchableWithoutFeedback>
         </SignInContext>
