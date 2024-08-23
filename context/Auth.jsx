@@ -53,8 +53,10 @@ const AuthContext = ( { children }) => {
                     .eq("id", data.user.id)
                     if (!getCityError) {
                         
-                        if (cityData[0].city) completionData.completedCity = true //else city part hasnt been completed yet
-                        
+                        if (cityData[0].city) {
+                            completionData.completedCity = true //else city part hasnt been completed yet
+                            asyncStorage.setItem("userCity", cityData[0].city) //store in storage to be retreived later
+                        }
                     }   else console.error(JSON.stringify(getCityError, null, 2))
 
                 }   else console.error(JSON.stringify(getSessionError, null, 2))

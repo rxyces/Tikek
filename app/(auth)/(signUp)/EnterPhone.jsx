@@ -82,7 +82,7 @@ const EnterPhone = () => {
                 {/* sign up text */}
                 <View className="items-center mt-10 space-y-4">
                     <Text className="font-wsemibold text-[30px] text-white">
-                        Sign up to Qswap
+                        Sign up to Tikek
                     </Text>
                     <Text className="font-wregular text-[16px] text-[#DFE3EC]">
                         Buy. Sell. Experience.

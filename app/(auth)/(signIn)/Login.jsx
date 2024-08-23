@@ -147,7 +147,7 @@ const Login = () => {
                 {/* sign up text */}
                 <View className="items-center mt-6 space-y-4">
                     <Text className="font-wsemibold text-[30px] text-white">
-                        Welcome back to Qswap
+                        Welcome back to Tikek
                     </Text>
                     <Text className="font-wregular text-[16px] text-[#DFE3EC]">
                         Buy. Sell. Experience.

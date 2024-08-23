@@ -17,7 +17,7 @@ const Landing = () => {
 
                 {/* //title */}
                 <Text className="font-rbold text-[32px] text-white mt-2">
-                    Qswap
+                    Tikek
                 </Text>
 
                 {/* //container for slogans */}
