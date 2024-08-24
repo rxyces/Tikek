@@ -1,26 +1,13 @@
 import { View, Text, ScrollView } from 'react-native'
 import { Image } from 'expo-image';
-import { supabase } from "../lib/supabase"
 import { useEffect, useState } from 'react';
 import { format } from "date-fns"
 
 import Error from './Error';
+import { getRecords } from '../utils/dataRetrieval';
 
-const dummyData = {
-    categoryTitle: "Popular",
-    databaseTitle: "popular",
-    items : [
-        {title: "Old School Hip-Hop Outdoor Summer BBQ", price: "From £9.80", date: "Aug, 21st", location: "SWG3 Glasgow", image: "https://fatsoma.imgix.net/W1siZiIsInB1YmxpYy8yMDI0LzgvMTUvMTMvMjkvNTkvNDA0L1JpZmYtUmFmZi1NTVUtMjAyNC1IZWF0aGVyLUJvd2xpbmcuanBlZyJdXQ?w=768&h=432&fit=fillmax&fill=blur&auto=format%2Ccompress"},
-        {title: "Old School Hip-Hop Outdoor Summer BBQ", price: "From £9.80", date: "Aug, 21st", location: "SWG3 Glasgow", image: "https://fatsoma.imgix.net/W1siZiIsInB1YmxpYy8yMDI0LzgvMTUvMTMvMjkvNTkvNDA0L1JpZmYtUmFmZi1NTVUtMjAyNC1IZWF0aGVyLUJvd2xpbmcuanBlZyJdXQ?w=768&h=432&fit=fillmax&fill=blur&auto=format%2Ccompress"},
-        {title: "Old School Hip-Hop Outdoor Summer BBQ", price: "From £9.80", date: "Aug, 21st", location: "SWG3 Glasgow", image: "https://fatsoma.imgix.net/W1siZiIsInB1YmxpYy8yMDI0LzgvMTUvMTMvMjkvNTkvNDA0L1JpZmYtUmFmZi1NTVUtMjAyNC1IZWF0aGVyLUJvd2xpbmcuanBlZyJdXQ?w=768&h=432&fit=fillmax&fill=blur&auto=format%2Ccompress"},
-        {title: "Old School Hip-Hop Outdoor Summer BBQ", price: "From £9.80", date: "Aug, 21st", location: "SWG3 Glasgow", image: "https://fatsoma.imgix.net/W1siZiIsInB1YmxpYy8yMDI0LzgvMTUvMTMvMjkvNTkvNDA0L1JpZmYtUmFmZi1NTVUtMjAyNC1IZWF0aGVyLUJvd2xpbmcuanBlZyJdXQ?w=768&h=432&fit=fillmax&fill=blur&auto=format%2Ccompress"},
-        {title: "Old School Hip-Hop Outdoor Summer BBQ", price: "From £9.80", date: "Aug, 21st", location: "SWG3 Glasgow", image: "https://fatsoma.imgix.net/W1siZiIsInB1YmxpYy8yMDI0LzgvMTUvMTMvMjkvNTkvNDA0L1JpZmYtUmFmZi1NTVUtMjAyNC1IZWF0aGVyLUJvd2xpbmcuanBlZyJdXQ?w=768&h=432&fit=fillmax&fill=blur&auto=format%2Ccompress"},
-        {title: "Old School Hip-Hop Outdoor Summer BBQ", price: "From £9.80", date: "Aug, 21st", location: "SWG3 Glasgow", image: "https://fatsoma.imgix.net/W1siZiIsInB1YmxpYy8yMDI0LzgvMTUvMTMvMjkvNTkvNDA0L1JpZmYtUmFmZi1NTVUtMjAyNC1IZWF0aGVyLUJvd2xpbmcuanBlZyJdXQ?w=768&h=432&fit=fillmax&fill=blur&auto=format%2Ccompress"},
-    ],
 
-}
-
-const EventCategoryCarousel = ({ data }) => {
+const EventCategoryCarousel = ({ categoryTitle }) => {
     //states
     const [isLoading, setIsLoading] = useState(true)
     const [errorText, setErrorText] = useState("")
@@ -31,33 +18,14 @@ const EventCategoryCarousel = ({ data }) => {
 
     useEffect(() => {
         setErrorText("")
-        const getRecords = async () => {
-            const { data: popularEventData, error: popularEventsError } = await supabase
-            .from(`${dummyData.databaseTitle}_events`)
-            .select('id')
-            
-            if (popularEventsError) {
-                console.error(JSON.stringify(popularEventsError))
-                setErrorText("Failed fetching events, reload")
-            } 
+        getRecords({ dbName: categoryTitle }).then(({data, error}) => {
+            if (!error) {
+                setEventData(data)
+            }
             else {
-                const eventIDs = popularEventData.map(event => event.id)
-                const { data: eventData, error: eventError } = await supabase
-                .from('events')
-                .select('*')
-                .in('id', eventIDs)
-
-                if (eventError) {
-                    console.error(JSON.stringify(eventError))
-                    setErrorText("Failed fetching events, reload")
-                }
-                else {
-                    return eventData
-                }
-                }
-        }
-        getRecords().then((eventData) => {
-            setEventData(eventData)
+                setErrorText(error)
+            }
+            
             setIsLoading(false)
         }
         )
@@ -88,21 +56,21 @@ const EventCategoryCarousel = ({ data }) => {
                 </View>
             </View>
             <Text className="font-wregular text-[16px] text-[#C1BBF6]" numberOfLines={1} ellipsizeMode='tail'>
-                £999
+                From £999
             </Text>
         </View>
         );
     }
 
     return (
-        <View className="min-w-5/6">
+        <View className="min-w-5/6 flex-1">
             <Text className="font-wregular text-[20px] text-[#DFE3EC]">
-                {dummyData.categoryTitle}
+                {categoryTitle.charAt(0).toUpperCase() + categoryTitle.slice(1)}
             </Text>
 
             {errorText ? 
             <Error errorText={errorText}/> : isLoading ? "" : (
-                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="mt-4 flex flex-row space-x-8">
+                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="mt-4 flex-row space-x-8">
                 {eventData.map((item, index) => (
                 <View key={index}>
                     {carouselItem({ item })} 

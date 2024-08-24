@@ -38,8 +38,9 @@ const Home = () => {
     }, [])
 
     return (
-        <ScrollView contentContainerStyle={{ flex: 1 }}>
-            <SafeAreaView className="flex-1">
+        <SafeAreaView>
+            <ScrollView>
+            
                 <View className="flex-1 items-center mt-4">
 
                     {/* city text at the top */}
@@ -134,17 +135,17 @@ const Home = () => {
                         </Animated.View>
                     }
                 
-                <Animated.View layout={LinearTransition} className="mt-6">
-                    <FeaturedCarousel/>
-                </Animated.View>
-                
-                <Animated.View layout={LinearTransition} className="mt-6 w-5/6 items-start">
-                    <EventCategoryCarousel/>
-                </Animated.View>
+                    <Animated.View layout={LinearTransition} className="mt-6">
+                        <FeaturedCarousel/>
+                    </Animated.View>
+                    
+                    <Animated.View layout={LinearTransition} className="mt-6 w-5/6 items-start">
+                        <EventCategoryCarousel categoryTitle={"popular"}/>
+                    </Animated.View>
                 
                 </View>
-            </SafeAreaView>
-        </ScrollView>
+            </ScrollView>
+        </SafeAreaView>
     )
 }
 
