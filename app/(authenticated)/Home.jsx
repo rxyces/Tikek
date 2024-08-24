@@ -8,10 +8,12 @@ import Animated, {
     Easing,
     FadeIn,
     FadeOut,
+    LinearTransition,
 } from 'react-native-reanimated';
 
 import { asyncStorage } from '../../context/Store'
 import FeaturedCarousel from '../../components/FeaturedCarousel'
+import EventCategoryCarousel from '../../components/EventCategoryCarousel';
 import FilterIcon from "../../assets/svgs/filter_icon.svg"
 import UpSelector from "../../assets/svgs/up_selector.svg"
 import TonightIcon from "../../assets/svgs/tonight_icon.svg"
@@ -131,12 +133,15 @@ const Home = () => {
                         </View>
                         </Animated.View>
                     }
-                    
-                    <View className="mt-6">
-                        <FeaturedCarousel/>
-                    </View>
-                    
-
+                
+                <Animated.View layout={LinearTransition} className="mt-6">
+                    <FeaturedCarousel/>
+                </Animated.View>
+                
+                <Animated.View layout={LinearTransition} className="mt-6 w-5/6 items-start">
+                    <EventCategoryCarousel/>
+                </Animated.View>
+                
                 </View>
             </SafeAreaView>
         </ScrollView>

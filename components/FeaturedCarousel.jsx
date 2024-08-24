@@ -38,14 +38,14 @@ const FeaturedCarousel = ({ data }) => {
                 <View className="">
                     <View className="flex-row gap-2 items-center">
                         <DateIcon width={24} height={24} />
-                        <Text className="font-wregular text-[16px] text-[#C1C8D7]">
+                        <Text className="font-wregular text-[16px] text-[#C1C8D7]" numberOfLines={1} ellipsizeMode='tail'>
                             {item.date}
                         </Text>
                     </View>
                     <View className="flex-row items-center py-1 justify-between">
                         <View className="items-center flex-row gap-2">
                             <PriceIcon width={24} height={24} />
-                            <Text className="font-wregular text-[16px] text-[#C1BBF6]">
+                            <Text className="font-wregular text-[16px] text-[#C1BBF6]" numberOfLines={1} ellipsizeMode='tail'>
                                 {item.price}
                             </Text>
                         </View>
@@ -54,7 +54,7 @@ const FeaturedCarousel = ({ data }) => {
                     </View>
                     <View className="flex-row gap-2 items-center">
                         <LocationIcon width={24} height={24} />
-                        <Text className="font-wmedium text-[16px] text-[#C1C8D7]">
+                        <Text className="font-wmedium text-[16px] text-[#C1C8D7]" numberOfLines={1} ellipsizeMode='tail'>
                             {item.location}
                         </Text>
                     </View>
