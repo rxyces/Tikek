@@ -62,25 +62,47 @@ const EventCategoryCarousel = ({ categoryTitle }) => {
         );
     }
 
-    return (
-        <View className="min-w-5/6 flex-1">
-            <Text className="font-wregular text-[20px] text-[#DFE3EC]">
-                {categoryTitle.charAt(0).toUpperCase() + categoryTitle.slice(1)}
-            </Text>
-
-            {errorText ? 
-            <Error errorText={errorText}/> : isLoading ? "" : (
-                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="mt-4 flex-row space-x-8">
-                {eventData.map((item, index) => (
-                <View key={index}>
-                    {carouselItem({ item })} 
+    if (errorText)  {
+        return (
+            <View className="min-w-[83.3%]">
+                <Text className="font-wregular text-[20px] text-[#DFE3EC]">
+                    {categoryTitle.charAt(0).toUpperCase() + categoryTitle.slice(1)}
+                </Text>
+                <View className="items-start">
+                    <Error errorText={errorText}/>
                 </View>
-                ))}
-            </ScrollView>)}
-
-
-        </View>
-    )
+            </View>
+        )
+    }
+    else if (isLoading) {
+        return (
+            <View className="min-w-[83.3%]">
+                <Text className="font-wregular text-[20px] text-[#DFE3EC]">
+                    {categoryTitle.charAt(0).toUpperCase() + categoryTitle.slice(1)}
+                </Text>
+                <Text className="font-wmedium text-[16px] text-[#C1C8D7] mt-4">
+                    Load already pls
+                </Text>
+            </View>
+        )
+    } 
+    else {
+        return (
+            <View className="min-w-[83.3%]">
+                <Text className="font-wregular text-[20px] text-[#DFE3EC]">
+                    {categoryTitle.charAt(0).toUpperCase() + categoryTitle.slice(1)}
+                </Text>
+    
+                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="mt-4 flex-row space-x-8">
+                    {eventData.map((item, index) => (
+                    <View key={index}>
+                        {carouselItem({ item })} 
+                    </View>
+                    ))}
+                </ScrollView>
+            </View>
+        )
+    }
 }
 
 export default EventCategoryCarousel
