@@ -1,8 +1,9 @@
 import { useRef, useState, useEffect } from 'react';
-import { View, Text, Dimensions } from 'react-native';
+import { View, Text, Dimensions, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { format } from "date-fns"
+import { router } from 'expo-router';
 
 import Error from './Error';
 import { getRecords } from '../utils/dataRetrieval';
@@ -35,7 +36,7 @@ const FeaturedCarousel = () => {
             if (!error) {
                 setFeaturedData(data)
                 setAllEventData(prevData => {
-                    const uniqueNewData = data.filter(item => !prevData.some(existingItem => existingItem.id === item.id))
+                    const uniqueNewData = data.filter(item => !prevData.some(existingItem => existingItem.id == item.id))
                     return [...prevData, ...uniqueNewData]
                 });
             }
@@ -48,8 +49,16 @@ const FeaturedCarousel = () => {
         )
     }, [])
 
+    const onPress = (itemId) => {
+        router.push({pathname:`/events/${itemId}`})
+    }
+
     const renderItem = ({ item }) => (
-        <View className="items-center flex-1">
+        <Pressable
+            style={({pressed}) => ({opacity: pressed ? 0.8 : 1})}
+            className="items-center flex-1"
+            onPress={() => onPress(item.id)}
+            >
             <View className="w-11/12 flex-1">
                 <View className="h-[170px]">
                     <Image
@@ -87,7 +96,7 @@ const FeaturedCarousel = () => {
                     </View>
                 </View>
             </View>
-        </View>
+        </Pressable>
         
 
     );

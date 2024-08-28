@@ -18,7 +18,7 @@ const AuthLoader = () => {
             return <Redirect href={"/ResetPassword"}/>
         }
         else if (completedEmail && completedCity) {
-            return <Redirect href={"/Home"}/> //has made acc into auth db and filled out all details in the profiles db
+            return <Redirect href={"/(tabsNav)/Home"}/> //has made acc into auth db and filled out all details in the profiles db
         }
         else if (!completedEmail) {
             return <Redirect href={"/AccountDetails"}/> // verified number but hasnt done anything else

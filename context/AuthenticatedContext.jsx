@@ -6,7 +6,7 @@ export function useAuthenticatedContext() {
     const context = useContext(authenticatedContext);
 
     if (!context) {
-        throw new Error("useSignInContext must be contained within signInContext")
+        throw new Error("useAuthenticatedContext must be contained within authenticatedContext")
     }
 
     return context;

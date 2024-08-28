@@ -2,7 +2,7 @@ import { supabase } from "../lib/supabase"
 
 export const getRecords = async ({dbName}) => {
     const { data: popularEventData, error: popularEventsError } = await supabase
-    .from(`${dbName}_events`)
+    .from(`${dbName ? dbName + "_" : ""}events`)
     .select('id')
     
     if (popularEventsError) {

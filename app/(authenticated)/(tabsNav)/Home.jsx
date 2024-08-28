@@ -1,5 +1,5 @@
 import { View, Text, Pressable, ScrollView, SafeAreaView, TouchableOpacity, RefreshControl, ActivityIndicator  } from 'react-native'
-import { supabase } from '../../lib/supabase'
+import { supabase } from '../../../lib/supabase'
 import { router } from 'expo-router'
 import { useEffect, useState, useCallback } from 'react'
 import Animated, { 
@@ -11,14 +11,14 @@ import Animated, {
     LinearTransition,
 } from 'react-native-reanimated';
 
-import { asyncStorage } from '../../context/Store'
-import FeaturedCarousel from '../../components/FeaturedCarousel'
-import EventCategoryCarousel from '../../components/EventCategoryCarousel';
-import FilterIcon from "../../assets/svgs/filter_icon.svg"
-import UpSelector from "../../assets/svgs/up_selector.svg"
-import TonightIcon from "../../assets/svgs/tonight_icon.svg"
-import PopularIcon from "../../assets/svgs/popular_icon.svg"
-import CheapIcon from "../../assets/svgs/cheap_icon.svg"
+import { asyncStorage } from '../../../context/Store'
+import FeaturedCarousel from '../../../components/FeaturedCarousel'
+import EventCategoryCarousel from '../../../components/EventCategoryCarousel';
+import FilterIcon from "../../../assets/svgs/filter_icon.svg"
+import UpSelector from "../../../assets/svgs/up_selector.svg"
+import TonightIcon from "../../../assets/svgs/tonight_icon.svg"
+import PopularIcon from "../../../assets/svgs/popular_icon.svg"
+import CheapIcon from "../../../assets/svgs/cheap_icon.svg"
 
 
 

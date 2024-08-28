@@ -26,7 +26,7 @@ const EventCategoryCarousel = ({ categoryTitle }) => {
                 setEventData(data)
                 //set unique data to the state basically acting as cache for all event data retrieved
                 setAllEventData(prevData => {
-                    const uniqueNewData = data.filter(item => !prevData.some(existingItem => existingItem.id === item.id))
+                    const uniqueNewData = data.filter(item => !prevData.some(existingItem => existingItem.id == item.id))
                     return [...prevData, ...uniqueNewData]
                 });
             }
