@@ -5,13 +5,16 @@ import { format } from "date-fns"
 
 import Error from './Error';
 import { getRecords } from '../utils/dataRetrieval';
-
+import { useAuthenticatedContext } from '../context/AuthenticatedContext';
 
 const EventCategoryCarousel = ({ categoryTitle }) => {
     //states
     const [isLoading, setIsLoading] = useState(true)
     const [errorText, setErrorText] = useState("")
     const [eventData, setEventData] = useState(null)
+
+    //context
+    const { setAllEventData } = useAuthenticatedContext()
 
     //loading image
     const source = require("../assets/images/loading_placeholder.png")
@@ -21,6 +24,11 @@ const EventCategoryCarousel = ({ categoryTitle }) => {
         getRecords({ dbName: categoryTitle }).then(({data, error}) => {
             if (!error) {
                 setEventData(data)
+                //set unique data to the state basically acting as cache for all event data retrieved
+                setAllEventData(prevData => {
+                    const uniqueNewData = data.filter(item => !prevData.some(existingItem => existingItem.id === item.id))
+                    return [...prevData, ...uniqueNewData]
+                });
             }
             else {
                 setErrorText(error)

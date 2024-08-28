@@ -6,6 +6,7 @@ import { format } from "date-fns"
 
 import Error from './Error';
 import { getRecords } from '../utils/dataRetrieval';
+import { useAuthenticatedContext } from '../context/AuthenticatedContext';
 import DateIcon from "../assets/svgs/date_icon.svg"
 import PriceIcon from "../assets/svgs/price_icon.svg"
 import LocationIcon from "../assets/svgs/location_icon.svg"
@@ -20,6 +21,9 @@ const FeaturedCarousel = () => {
     const [errorText, setErrorText] = useState("")
     const [featuredData, setFeaturedData] = useState(null)
 
+    //context
+    const { setAllEventData } = useAuthenticatedContext()
+
     const isCarousel = useRef(null)
 
     //loading image
@@ -30,6 +34,10 @@ const FeaturedCarousel = () => {
         getRecords({ dbName: "featured" }).then(({data, error}) => {
             if (!error) {
                 setFeaturedData(data)
+                setAllEventData(prevData => {
+                    const uniqueNewData = data.filter(item => !prevData.some(existingItem => existingItem.id === item.id))
+                    return [...prevData, ...uniqueNewData]
+                });
             }
             else {
                 setErrorText(error)
