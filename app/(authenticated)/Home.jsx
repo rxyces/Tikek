@@ -1,7 +1,7 @@
-import { View, Text, Pressable, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native'
+import { View, Text, Pressable, ScrollView, SafeAreaView, TouchableOpacity, RefreshControl, ActivityIndicator  } from 'react-native'
 import { supabase } from '../../lib/supabase'
 import { router } from 'expo-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Animated, { 
     FadeInUp, 
     FadeOutUp,
@@ -26,6 +26,9 @@ const Home = () => {
     // states
     const [showFilters, setShowFilters] = useState(false)
     const [city, setCity] = useState("-----") // default value while city hasnt loaded yet
+    const [refreshing, setRefreshing] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0)
+    
 
     // updates the city state when page loads
     useEffect(() => {
@@ -37,11 +40,27 @@ const Home = () => {
         getCity()
     }, [])
 
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        setTimeout(() => {
+            setRefreshing(false);
+            setRefreshKey(prevKey => prevKey + 1)
+        }, 500);
+    }, []);
+
     return (
         <SafeAreaView>
-            <ScrollView>
-            
-                <View className="flex-1 items-center mt-4">
+            <ScrollView
+            refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
+            }>
+            {/* show spinner if refreshing */}
+            {refreshing && (
+            <Animated.View layout={LinearTransition} className="flex-row justify-center items-center mt-4">
+                <ActivityIndicator size="large" color="#C6D8FF" />
+            </Animated.View>
+            )} 
+                <Animated.View layout={LinearTransition} className="flex-1 items-center mt-4">
 
                     {/* city text at the top */}
                     <View className="flex-row w-5/6 border-b-2 border-[#C6D8FF] items-end pb-1 justify-between">
@@ -136,14 +155,14 @@ const Home = () => {
                     }
                 
                     <Animated.View layout={LinearTransition} className="mt-6">
-                        <FeaturedCarousel/>
+                        <FeaturedCarousel key={refreshKey}/>
                     </Animated.View>
                     
                     <Animated.View layout={LinearTransition} className="mt-6 w-5/6 items-start">
-                        <EventCategoryCarousel categoryTitle={"popular"}/>
+                        <EventCategoryCarousel key={refreshKey} categoryTitle={"popular"}/>
                     </Animated.View>
                 
-                </View>
+                </Animated.View>
             </ScrollView>
         </SafeAreaView>
     )
