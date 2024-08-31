@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { format } from "date-fns"
 
 import Error from './Error';
-import { getRecords } from '../utils/dataRetrieval';
+import { getRecordsByDB } from '../utils/dataRetrieval';
 import { useAuthenticatedContext } from '../context/AuthenticatedContext';
 
 const EventCategoryCarousel = ({ categoryTitle }) => {
@@ -21,7 +21,7 @@ const EventCategoryCarousel = ({ categoryTitle }) => {
 
     useEffect(() => {
         setErrorText("")
-        getRecords({ dbName: categoryTitle }).then(({data, error}) => {
+        getRecordsByDB({ dbName: categoryTitle }).then(({data, error}) => {
             if (!error) {
                 setEventData(data)
                 //set unique data to the state basically acting as cache for all event data retrieved
