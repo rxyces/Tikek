@@ -1,28 +1,34 @@
 import { supabase } from "../lib/supabase"
 
-export const getRecordsByDB = async ({ dbName }) => {
-    const { data: specificEventData, error: specificEventsError } = await supabase
-    .from(`${dbName}_events`)
+export const getRecordsByCategory = async ({ category }) => {
+    const { data: categoryData, error: categoryError } = await supabase
+    .from("categories")
     .select('id')
+    .eq("name", category)
     
-    if (specificEventsError) {
-        console.error(JSON.stringify(specificEventsError))
-        return {data: null, error: "Failed fetching events, reload"}
-    } 
-    else {
-        const eventIDs = specificEventData.map(event => event.id)
-        const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select('*')
-        .in('id', eventIDs)
+    if (!categoryError) {
+        const categoryId = categoryData[0]?.id; 
 
-        if (eventError) {
-            console.error(JSON.stringify(eventError))
-            return {data: null, error: "Failed fetching events, reload"}
-        }
+        if (categoryId) {
+            const { data: eventCategoriesData, error: eventsCategoriesError } = await supabase
+                .from('event_categories')
+                .select("events(*)")
+                .eq('category_id', categoryId);
+            if (!eventsCategoriesError) {
+                const eventData = eventCategoriesData.map(item => item.events)
+                return {data: eventData, error: null}
+            }
+            else {
+                return {data: null, error: eventsCategoriesError}
+            }
+        } 
         else {
-            return {data: eventData, error: null}
+            console.error("Category id dosent exist")
+            return {data: null, error: "Category id not found"}
         }
+    }
+    else {
+        return {data: null, error: categoryError}
     }
 }
 

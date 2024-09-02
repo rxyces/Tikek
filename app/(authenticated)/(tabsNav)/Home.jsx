@@ -159,7 +159,7 @@ const Home = () => {
                     </Animated.View>
                     
                     <Animated.View layout={LinearTransition} className="mt-6 w-5/6 items-start">
-                        <EventCategoryCarousel key={refreshKey} categoryTitle={"popular"}/>
+                        <EventCategoryCarousel key={refreshKey} categoryTitle={"Popular"}/>
                     </Animated.View>
                 
                 </Animated.View>

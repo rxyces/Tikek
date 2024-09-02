@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { format } from "date-fns"
 
 import Error from './Error';
-import { getRecordsByDB } from '../utils/dataRetrieval';
+import { getRecordsByCategory } from '../utils/dataRetrieval';
 import { useAuthenticatedContext } from '../context/AuthenticatedContext';
 
 const EventCategoryCarousel = ({ categoryTitle }) => {
@@ -21,7 +21,7 @@ const EventCategoryCarousel = ({ categoryTitle }) => {
 
     useEffect(() => {
         setErrorText("")
-        getRecordsByDB({ dbName: categoryTitle }).then(({data, error}) => {
+        getRecordsByCategory({ category: categoryTitle }).then(({data, error}) => {
             if (!error) {
                 setEventData(data)
                 //set unique data to the state basically acting as cache for all event data retrieved
@@ -74,7 +74,7 @@ const EventCategoryCarousel = ({ categoryTitle }) => {
         return (
             <View className="min-w-[83.3%]">
                 <Text className="font-wregular text-[20px] text-[#DFE3EC]">
-                    {categoryTitle.charAt(0).toUpperCase() + categoryTitle.slice(1)}
+                    {categoryTitle}
                 </Text>
                 <View className="items-start">
                     <Error errorText={errorText}/>
@@ -86,7 +86,7 @@ const EventCategoryCarousel = ({ categoryTitle }) => {
         return (
             <View className="min-w-[83.3%]">
                 <Text className="font-wregular text-[20px] text-[#DFE3EC]">
-                    {categoryTitle.charAt(0).toUpperCase() + categoryTitle.slice(1)}
+                    {categoryTitle}
                 </Text>
                 <Text className="font-wmedium text-[16px] text-[#C1C8D7] mt-4">
                     Load already pls
@@ -98,7 +98,7 @@ const EventCategoryCarousel = ({ categoryTitle }) => {
         return (
             <View className="min-w-[83.3%]">
                 <Text className="font-wregular text-[20px] text-[#DFE3EC]">
-                    {categoryTitle.charAt(0).toUpperCase() + categoryTitle.slice(1)}
+                    {categoryTitle}
                 </Text>
     
                 <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="mt-4 flex-row space-x-8">

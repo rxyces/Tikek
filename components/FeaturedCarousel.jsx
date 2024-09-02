@@ -6,7 +6,7 @@ import { format } from "date-fns"
 import { router } from 'expo-router';
 
 import Error from './Error';
-import { getRecordsByDB } from '../utils/dataRetrieval';
+import { getRecordsByCategory } from '../utils/dataRetrieval';
 import { useAuthenticatedContext } from '../context/AuthenticatedContext';
 import DateIcon from "../assets/svgs/date_icon.svg"
 import PriceIcon from "../assets/svgs/price_icon.svg"
@@ -32,7 +32,7 @@ const FeaturedCarousel = () => {
 
     useEffect(() => {
         setErrorText("")
-        getRecordsByDB({ dbName: "featured" }).then(({data, error}) => {
+        getRecordsByCategory({ category: "Featured" }).then(({data, error}) => {
             if (!error) {
                 setFeaturedData(data)
                 setAllEventData(prevData => {
