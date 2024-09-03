@@ -8,10 +8,6 @@ import Animated, {
     useSharedValue,
     useAnimatedStyle,
     Easing,
-    FadeInUp, 
-    FadeOutUp,
-    FadeIn,
-    FadeOut,
 } from 'react-native-reanimated';
 import { format } from "date-fns"
 import { A } from '@expo/html-elements';
@@ -19,7 +15,8 @@ import { LinearGradient } from 'expo-linear-gradient'
 import MaskedView from '@react-native-masked-view/masked-view'
 
 import Error from '../../../../components/Error';
-import { getRecordsByID } from '../../../../utils/dataRetrieval';
+import TicketWidget from '../../../../components/TicketWidget';
+import { getRecordsByID, getTicketTypeByEventID } from '../../../../utils/dataRetrieval';
 import { useAuthenticatedContext } from '../../../../context/AuthenticatedContext';
 import DateIcon from "../../../../assets/svgs/date_icon.svg"
 import LocationIcon from "../../../../assets/svgs/location_icon.svg"
@@ -41,6 +38,7 @@ const eventPage = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [errorText, setErrorText] = useState("")
     const [expandedDetails, setExpandedDetails] = useState(false)
+    const [ticketTypes, setTicketTypes] = useState([])
 
     //context
     const { allEventData, setAllEventData } = useAuthenticatedContext()
@@ -75,6 +73,16 @@ const eventPage = () => {
     //loading data for the event
     useEffect(() => {
         setErrorText("")
+        getTicketTypeByEventID(id).then(({data, error}) => { 
+            if (!error) {
+                setTicketTypes(data)
+            }
+            else {
+                setErrorText(error)
+            }
+        }
+        )
+
         const eventExists = allEventData.some(event => event.id == id) //check if event already exists in the context
         if (eventExists) {
             const eventDetails = allEventData.find(event => event.id == id) //if it does exist in the context then no need to fetch it again
@@ -87,7 +95,6 @@ const eventPage = () => {
                     setCurrentEventDetails(data[0])
                     setAllEventData(prevData => {
                         const uniqueNewData = data.filter(item => !prevData.some(existingItem => existingItem.id == item.id))
-                        setIsLoading(false)
                         return [...prevData, ...uniqueNewData] //store the newly fetched id that was previously missing
                     });
                 }
@@ -201,19 +208,29 @@ const eventPage = () => {
                                 </MaskedView>
                             </View>
 
-                                
-                            <Pressable
-                                style={({ pressed }) => ({
-                                    opacity: pressed ? 0.8 : 1,
-                                    width: "100%",
-                                    marginTop: 16
-                                })}
-                                onPress={() => {}}>
-                                    <Text className="font-wregular text-[12px] text-[#60697B] underline">
-                                        How it works?
-                                    </Text>
-                            </Pressable>
+                            <Animated.View layout={LinearTransition}>
+                                <Pressable
+                                    style={({ pressed }) => ({
+                                        opacity: pressed ? 0.8 : 1,
+                                        width: "100%",
+                                        marginTop: 16
+                                    })}
+                                    onPress={() => {}}>
+                                        <Text className="font-wregular text-[12px] text-[#60697B] underline">
+                                            How it works?
+                                        </Text>
+                                </Pressable>
+                            </Animated.View>
 
+                            <Animated.View layout={LinearTransition} className="mt-4">
+                                {ticketTypes.map(ticketType => ( 
+                                    // for spacing between elements
+                                    <View key={ticketType.id} className="mb-4"> 
+                                        <TicketWidget ticketTypeData={ticketType} /> 
+                                    </View>
+                                ))}
+                                
+                            </Animated.View>
                         </View>
                     </View>
                 </ScrollView>

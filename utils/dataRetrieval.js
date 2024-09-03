@@ -46,3 +46,37 @@ export const getRecordsByID = async ({id}) => {
         return {data: eventData, error: null}
     }
 }
+
+export const getTicketAsksByEventID = async (id) => {
+    const { data: ticketData, error: ticketError } = await supabase
+    .from("ticket_types")
+    .select(`
+        *,
+        user_asks(*),
+        user_offers(*)
+        `)
+    .eq("id", id)
+    
+    if (ticketError) {
+        console.error(JSON.stringify(eventsError))
+        return {data: null, error: "Failed fetching tickets, reload"}
+    } 
+    else {
+        return {data: ticketData, error: null}
+    }
+}
+
+export const getTicketTypeByEventID = async (id) => {
+    const { data: ticketData, error: ticketError } = await supabase
+    .from("ticket_types")
+    .select("*")
+    .eq("event_id", id)
+    
+    if (ticketError) {
+        console.error(JSON.stringify(eventsError))
+        return {data: null, error: "Failed fetching ticket types, reload"}
+    } 
+    else {
+        return {data: ticketData, error: null}
+    }
+}
