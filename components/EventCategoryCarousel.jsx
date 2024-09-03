@@ -96,17 +96,19 @@ const EventCategoryCarousel = ({ categoryTitle }) => {
     } 
     else {
         return (
-            <View className="min-w-[83.3%]">
+            <View className="w-full ml-[16.666667%]">
                 <Text className="font-wregular text-[20px] text-[#DFE3EC]">
                     {categoryTitle}
                 </Text>
     
-                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="mt-4 flex-row space-x-8">
+                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="mt-4 flex-row space-x-4">
                     {eventData.map((item, index) => (
                     <View key={index}>
                         {carouselItem({ item })} 
                     </View>
                     ))}
+                    {/* empty container at the end */}
+                    <View className="min-w-[75px] min-h-[100px]"/>
                 </ScrollView>
             </View>
         )

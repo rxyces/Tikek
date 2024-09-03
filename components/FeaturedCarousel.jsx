@@ -102,14 +102,14 @@ const FeaturedCarousel = () => {
     );
     if (errorText)  {
     return (
-        <View className="min-w-[83.3%] h-[360px] rounded-lg border-2 border-[#C6D8FF] p-2 justify-center items-center">
+        <View className="min-w-[83.3%] h-[360px] rounded-lg border-2 border-[#C6D8FF] justify-center items-center">
             <Error errorText={errorText}/>
         </View>
     )
     }
     else if (isLoading) {
         return (
-            <View className="min-w-[83.3%] h-[360px] rounded-lg border-2 border-[#C6D8FF] p-2 justify-center items-center">
+            <View className="min-w-[83.3%] h-[360px] rounded-lg border-2 border-[#C6D8FF] justify-center items-center">
                 <Text className="font-wmedium text-[16px] text-[#C1C8D7]">
                     Load already pls
                 </Text>
@@ -118,7 +118,7 @@ const FeaturedCarousel = () => {
     } 
     else {
         return (
-            <View className="min-w-[83.3%] h-[360px] rounded-lg border-2 border-[#C6D8FF] p-2">
+            <View className="min-w-[83.3%] h-[360px] rounded-lg border-2 border-[#C6D8FF]">
                 <View className="items-center flex-1">
                     <View className="flex-row items-center justify-center relative my-4 w-11/12">
                         <Text className="font-wregular text-[20px] text-[#DFE3EC] absolute left-0">

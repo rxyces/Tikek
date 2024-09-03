@@ -51,6 +51,7 @@ const Home = () => {
     return (
         <SafeAreaView>
             <ScrollView
+            contentContainerStyle={{ paddingBottom: 100 }}
             refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
             }>
@@ -158,7 +159,7 @@ const Home = () => {
                         <FeaturedCarousel key={refreshKey}/>
                     </Animated.View>
                     
-                    <Animated.View layout={LinearTransition} className="mt-6 w-5/6 items-start">
+                    <Animated.View layout={LinearTransition} className="mt-6 items-start">
                         <EventCategoryCarousel key={refreshKey} categoryTitle={"Popular"}/>
                     </Animated.View>
                 
