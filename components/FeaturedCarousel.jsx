@@ -33,6 +33,7 @@ const FeaturedCarousel = () => {
         queryFn: () => getEventDataByCategory("Featured"),
         staleTime: 3 * 60 * 1000,
         refetchInterval: 300000,
+        refetchOnMount: "always",
     });
 
     useEffect(() => {

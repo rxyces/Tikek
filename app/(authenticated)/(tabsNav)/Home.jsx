@@ -1,5 +1,4 @@
 import { View, Text, Pressable, ScrollView, SafeAreaView, TouchableOpacity, RefreshControl, ActivityIndicator  } from 'react-native'
-import { supabase } from '../../../lib/supabase'
 import { router } from 'expo-router'
 import { useEffect, useState, useCallback } from 'react'
 import Animated, { 

@@ -1,6 +1,6 @@
-import { View, Text, ScrollView, SafeAreaView, Pressable } from 'react-native'
+import { View, Text, ScrollView, SafeAreaView, Pressable, ActivityIndicator, RefreshControl } from 'react-native'
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Image } from 'expo-image';
 import Animated, { 
     LinearTransition,
@@ -38,6 +38,7 @@ const eventPage = () => {
     const [expandedDetails, setExpandedDetails] = useState(false)
     const [existsInContext, setExistsInContext] = useState(true) //true by default so it dosent send req on load before the states have had time to check
     const [eventData, setEventData] = useState(null)
+    const [refreshing, setRefreshing] = useState(false);
 
     //context
     const { allEventData, setAllEventData } = useAuthenticatedContext()
@@ -69,7 +70,15 @@ const eventPage = () => {
         }
     });
 
-    const { data, isLoading, error } = useQuery({
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        refetch()
+        setTimeout(() => {
+            setRefreshing(false);
+        }, 1000);
+    }, []);
+
+    const { data, isLoading, error, refetch } = useQuery({
         queryKey: ["eventID", event_id],
         queryFn: () => getRecordsByID(event_id),
         staleTime: 3 * 60 * 1000,
@@ -105,6 +114,25 @@ const eventPage = () => {
                 })
                 setExistsInContext(true)
             }
+        }
+        if (refreshing && data) {
+            //for when you initate refresh and the new data has been loaded 
+            setEventData(data[0])
+            setAllEventData(prevData => {
+                //updates any returned ids and new ids into the context
+                const updatedData = [...prevData]
+                data.forEach(newItem => {
+                    const existingIndex = updatedData.findIndex(item => item.id === newItem.id);
+                    if (existingIndex !== -1) {
+                        updatedData[existingIndex] = newItem
+                    } 
+                    else {
+                        updatedData.push(newItem)
+                    }
+                })
+                return updatedData
+            })
+            setExistsInContext(true)
         }
     }, [data, error])
 
@@ -207,8 +235,18 @@ const eventPage = () => {
     else {
         return (
             <SafeAreaView>
-                <ScrollView>
-                    <View className="flex-1 items-center mt-4">
+                <ScrollView
+                contentContainerStyle={{ paddingBottom: 100 }}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
+                }>
+                {/* show spinner if refreshing */}
+                {refreshing && (
+                <Animated.View layout={LinearTransition} className="flex-row justify-center items-center mt-4">
+                    <ActivityIndicator size="large" color="#C6D8FF" />
+                </Animated.View>
+                )}
+                    <Animated.View layout={LinearTransition} className="flex-1 items-center mt-4">
                         <View className="w-5/6">
                             <View className="h-[170px] border-2 border-[#C6D8FF] rounded-xl">
                                 <Image
@@ -322,7 +360,7 @@ const eventPage = () => {
                                 
                             </Animated.View>
                         </View>
-                    </View>
+                    </Animated.View>
                 </ScrollView>
             </SafeAreaView>
         )
