@@ -15,12 +15,10 @@ export function useAuthenticatedContext() {
 // context around whole authenticated users to store retrieved data
 const AuthenticatedContext = ( { children }) => {
     const [allEventData, setAllEventData] = useState([])
-    const [allTicketData, setAllTicketData] = useState([])
 
     return (
         <authenticatedContext.Provider value={{
             allEventData, setAllEventData,
-            allTicketData, setAllTicketData,
         }}>
         {children}
         </authenticatedContext.Provider>

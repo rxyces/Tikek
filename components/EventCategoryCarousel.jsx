@@ -1,43 +1,45 @@
 import { View, Text, ScrollView } from 'react-native'
 import { Image } from 'expo-image';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { format } from "date-fns"
+import { useQuery } from '@tanstack/react-query'
 
 import Error from './Error';
-import { getRecordsByCategory } from '../utils/dataRetrieval';
+import { getEventDataByCategory } from '../utils/dataRetrieval';
 import { useAuthenticatedContext } from '../context/AuthenticatedContext';
 
 const EventCategoryCarousel = ({ categoryTitle }) => {
-    //states
-    const [isLoading, setIsLoading] = useState(true)
-    const [errorText, setErrorText] = useState("")
-    const [eventData, setEventData] = useState(null)
-
     //context
     const { setAllEventData } = useAuthenticatedContext()
 
     //loading image
     const source = require("../assets/images/loading_placeholder.png")
 
+    const { data, isLoading, error } = useQuery({
+        queryKey: ["category", categoryTitle],
+        queryFn: () => getEventDataByCategory(categoryTitle),
+        staleTime: 3 * 60 * 1000,
+        refetchInterval: 300000,
+    });
+
     useEffect(() => {
-        setErrorText("")
-        getRecordsByCategory({ category: categoryTitle }).then(({data, error}) => {
-            if (!error) {
-                setEventData(data)
-                //set unique data to the state basically acting as cache for all event data retrieved
-                setAllEventData(prevData => {
-                    const uniqueNewData = data.filter(item => !prevData.some(existingItem => existingItem.id == item.id))
-                    return [...prevData, ...uniqueNewData]
-                });
-            }
-            else {
-                setErrorText(error)
-            }
-            
-            setIsLoading(false)
+        if (data) {
+            setAllEventData(prevData => {
+                //updates any returned ids and new ids into the context
+                const updatedData = [...prevData]
+                data.forEach(newItem => {
+                    const existingIndex = updatedData.findIndex(item => item.id === newItem.id);
+                    if (existingIndex !== -1) {
+                        updatedData[existingIndex] = newItem
+                    } 
+                    else {
+                        updatedData.push(newItem)
+                    }
+                })
+                return updatedData
+            })
         }
-        )
-    }, [])
+    }, [data, error])
 
     const carouselItem = ({item}) => {
         return (
@@ -70,14 +72,14 @@ const EventCategoryCarousel = ({ categoryTitle }) => {
         );
     }
 
-    if (errorText)  {
+    if (error)  {
         return (
             <View className="min-w-[83.3%]">
                 <Text className="font-wregular text-[20px] text-[#DFE3EC]">
                     {categoryTitle}
                 </Text>
                 <View className="items-start">
-                    <Error errorText={errorText}/>
+                    <Error errorText={error}/>
                 </View>
             </View>
         )
@@ -102,7 +104,7 @@ const EventCategoryCarousel = ({ categoryTitle }) => {
                 </Text>
     
                 <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="mt-4 flex-row space-x-4">
-                    {eventData.map((item, index) => (
+                    {data.map((item, index) => (
                     <View key={index}>
                         {carouselItem({ item })} 
                     </View>

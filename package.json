@@ -14,12 +14,15 @@
     "@expo/html-elements": "^0.10.1",
     "@expo/vector-icons": "^14.0.2",
     "@react-native-async-storage/async-storage": "1.23.1",
+    "@react-native-masked-view/masked-view": "0.3.1",
     "@rneui/themed": "^4.0.0-rc.8",
     "@supabase/supabase-js": "^2.45.1",
+    "@tanstack/react-query": "^5.54.1",
     "date-fns": "^3.6.0",
     "expo": "~51.0.21",
     "expo-constants": "~16.0.2",
     "expo-image": "~1.12.13",
+    "expo-linear-gradient": "~13.0.2",
     "expo-linking": "~6.3.1",
     "expo-router": "~3.5.18",
     "expo-secure-store": "~13.0.2",
@@ -43,9 +46,7 @@
     "react-native-svg": "15.2.0",
     "react-native-url-polyfill": "^2.0.0",
     "react-native-web": "~0.19.10",
-    "world-countries": "^5.0.0",
-    "expo-linear-gradient": "~13.0.2",
-    "@react-native-masked-view/masked-view": "0.3.1"
+    "world-countries": "^5.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

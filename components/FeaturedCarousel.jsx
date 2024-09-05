@@ -3,10 +3,11 @@ import { View, Text, Dimensions, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { format } from "date-fns"
-import { router } from 'expo-router';
+import { router } from 'expo-router'
+import { useQuery } from '@tanstack/react-query'
 
 import Error from './Error';
-import { getRecordsByCategory } from '../utils/dataRetrieval';
+import { getEventDataByCategory } from '../utils/dataRetrieval';
 import { useAuthenticatedContext } from '../context/AuthenticatedContext';
 import DateIcon from "../assets/svgs/date_icon.svg"
 import PriceIcon from "../assets/svgs/price_icon.svg"
@@ -18,9 +19,6 @@ const { width: screenWidth } = Dimensions.get('window');
 const FeaturedCarousel = () => {
     //states
     const [index, setIndex] = useState(0)
-    const [isLoading, setIsLoading] = useState(true)
-    const [errorText, setErrorText] = useState("")
-    const [featuredData, setFeaturedData] = useState(null)
 
     //context
     const { setAllEventData } = useAuthenticatedContext()
@@ -30,24 +28,31 @@ const FeaturedCarousel = () => {
     //loading image
     const source = require("../assets/images/loading_placeholder.png")
 
+    const { data, isLoading, error } = useQuery({
+        queryKey: ["category", "Featured"],
+        queryFn: () => getEventDataByCategory("Featured"),
+        staleTime: 3 * 60 * 1000,
+        refetchInterval: 300000,
+    });
+
     useEffect(() => {
-        setErrorText("")
-        getRecordsByCategory({ category: "Featured" }).then(({data, error}) => {
-            if (!error) {
-                setFeaturedData(data)
-                setAllEventData(prevData => {
-                    const uniqueNewData = data.filter(item => !prevData.some(existingItem => existingItem.id == item.id))
-                    return [...prevData, ...uniqueNewData]
-                });
-            }
-            else {
-                setErrorText(error)
-            }
-            
-            setIsLoading(false)
+        if (data) {
+            setAllEventData(prevData => {
+                //updates any returned ids and new ids into the context
+                const updatedData = [...prevData]
+                data.forEach(newItem => {
+                    const existingIndex = updatedData.findIndex(item => item.id === newItem.id);
+                    if (existingIndex !== -1) {
+                        updatedData[existingIndex] = newItem
+                    } 
+                    else {
+                        updatedData.push(newItem)
+                    }
+                })
+                return updatedData
+            })
         }
-        )
-    }, [])
+    }, [data, error])
 
     const onPress = (itemId) => {
         router.push({pathname:`/events/${itemId}`})
@@ -100,10 +105,10 @@ const FeaturedCarousel = () => {
         
 
     );
-    if (errorText)  {
+    if (error)  {
     return (
         <View className="min-w-[83.3%] h-[360px] rounded-lg border-2 border-[#C6D8FF] justify-center items-center">
-            <Error errorText={errorText}/>
+            <Error errorText={error}/>
         </View>
     )
     }
@@ -126,7 +131,7 @@ const FeaturedCarousel = () => {
                         </Text>
         
                         <Pagination
-                            dotsLength={featuredData.length}
+                            dotsLength={data.length}
                             activeDotIndex={index}
                             carouselRef={isCarousel}
                             dotStyle={{
@@ -147,7 +152,7 @@ const FeaturedCarousel = () => {
                     </View>
                     
                     <Carousel
-                        data={featuredData}
+                        data={data}
                         ref={isCarousel}
                         loop={true}
                         onSnapToItem={(index) => setIndex(index)}

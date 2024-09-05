@@ -1,6 +1,6 @@
 import { supabase } from "../lib/supabase"
 
-export const getRecordsByCategory = async ({ category }) => {
+export const getEventDataByCategory = async (category) => {
     const { data: categoryData, error: categoryError } = await supabase
     .from("categories")
     .select('id')
@@ -10,40 +10,54 @@ export const getRecordsByCategory = async ({ category }) => {
         const categoryId = categoryData[0]?.id; 
 
         if (categoryId) {
-            const { data: eventCategoriesData, error: eventsCategoriesError } = await supabase
-                .from('event_categories')
-                .select("events(*)")
-                .eq('category_id', categoryId);
-            if (!eventsCategoriesError) {
-                const eventData = eventCategoriesData.map(item => item.events)
-                return {data: eventData, error: null}
+            const { data: eventData, error: eventError } = await supabase
+            .from("event_categories")
+            .select(`
+                events(
+                    *, 
+                    ticket_types(
+                        *,
+                        user_asks(*),
+                        user_offers(*)
+                    )
+                    )
+                `)
+            .eq("category_id", categoryId)
+            if (!eventError) {
+                const formattedEventData = eventData.map(item => item.events)
+                return formattedEventData
             }
             else {
-                return {data: null, error: eventsCategoriesError}
+                throw new Error(eventError.details)
             }
-        } 
+        }
         else {
-            console.error("Category id dosent exist")
-            return {data: null, error: "Category id not found"}
+            throw new Error("Error, category id not found")
         }
     }
     else {
-        return {data: null, error: categoryError}
+        throw new Error(categoryError.details)
     }
 }
 
-export const getRecordsByID = async ({id}) => {
-    const { data: eventData, error: eventsError } = await supabase
+export const getRecordsByID = async (id) => {
+    const { data: eventData, error: eventError } = await supabase
     .from("events")
-    .select('*')
+    .select(`
+        *,
+        ticket_types(
+            *,
+            user_asks(*),
+            user_offers(*)
+        )
+        `)
     .eq('id', id)
     
-    if (eventsError) {
-        console.error(JSON.stringify(eventsError))
-        return {data: null, error: "Failed fetching events, reload"}
+    if (eventError) {
+        throw new Error(eventError.details)
     } 
     else {
-        return {data: eventData, error: null}
+        return eventData
     }
 }
 

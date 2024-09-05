@@ -18,7 +18,7 @@ const innerAuthenticatedLayout = () => {
                     headerStyle: { backgroundColor: "#131316" }
                 }}
                 >
-                <Stack.Screen name="events/[id]" />
+                <Stack.Screen name="events/[event_id]" />
             </Stack>
         </TouchableWithoutFeedback>
     );
