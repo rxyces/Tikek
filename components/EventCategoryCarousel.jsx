@@ -41,6 +41,16 @@ const EventCategoryCarousel = ({ categoryTitle }) => {
         }
     }, [data, error])
 
+    const generateDisplayPrice = (ticket_types) => {
+        const allAskPrices = ticket_types.flatMap(ticketType => ticketType.user_asks).map(ask => parseFloat(ask.price))
+        if (allAskPrices.length > 0) {
+            return "From £" + Math.min(...allAskPrices)
+        }
+        else {
+            return "From £"
+        }
+    }
+
     const carouselItem = ({item}) => {
         return (
         <View className="w-[150px]">
@@ -66,7 +76,7 @@ const EventCategoryCarousel = ({ categoryTitle }) => {
                 </View>
             </View>
             <Text className="font-wregular text-[16px] text-[#C1BBF6]" numberOfLines={1} ellipsizeMode='tail'>
-                From £999
+                {generateDisplayPrice(item.ticket_types)}
             </Text>
         </View>
         );

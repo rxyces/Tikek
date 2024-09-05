@@ -59,6 +59,16 @@ const FeaturedCarousel = () => {
         router.push({pathname:`/events/${itemId}`})
     }
 
+    const generateDisplayPrice = (ticket_types) => {
+        const allAskPrices = ticket_types.flatMap(ticketType => ticketType.user_asks).map(ask => parseFloat(ask.price))
+        if (allAskPrices.length > 0) {
+            return "From £" + Math.min(...allAskPrices)
+        }
+        else {
+            return "From £"
+        }
+    }
+
     const renderItem = ({ item }) => (
         <Pressable
             style={({pressed}) => ({opacity: pressed ? 0.8 : 1})}
@@ -88,7 +98,7 @@ const FeaturedCarousel = () => {
                         <View className="items-center flex-row gap-2">
                             <PriceIcon width={24} height={24} />
                             <Text className="font-wregular text-[16px] text-[#C1BBF6]" numberOfLines={1} ellipsizeMode='tail'>
-                                From £999
+                                {generateDisplayPrice(item.ticket_types)}
                             </Text>
                         </View>
                         <RightSelector width={24} height={24} />

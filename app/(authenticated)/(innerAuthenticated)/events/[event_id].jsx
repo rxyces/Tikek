@@ -351,7 +351,9 @@ const eventPage = () => {
                             </Animated.View>
 
                             <Animated.View layout={LinearTransition} className="mt-4">
-                                {eventData.ticket_types.map(ticketType => ( 
+                                {eventData.ticket_types
+                                .sort((a, b) => b.user_asks.length - a.user_asks.length) //sort descending order
+                                .map(ticketType => ( 
                                     // for spacing between elements
                                     <View key={ticketType.id} className="mb-4"> 
                                         <TicketWidget ticketTypeData={ticketType} eventId={eventData.id}/> 
