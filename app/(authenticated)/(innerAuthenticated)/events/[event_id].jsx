@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, SafeAreaView, Pressable, ActivityIndicator, RefreshControl } from 'react-native'
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import { useEffect, useState, useCallback } from 'react';
 import { Image } from 'expo-image';
 import Animated, { 
@@ -343,7 +343,7 @@ const eventPage = () => {
                                         width: "100%",
                                         marginTop: 16
                                     })}
-                                    onPress={() => {}}>
+                                    onPress={() => {router.push({pathname:`/tickets/1?event_id=1`})}}>
                                         <Text className="font-wregular text-[12px] text-[#60697B] underline">
                                             How it works?
                                         </Text>

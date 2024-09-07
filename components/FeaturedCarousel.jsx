@@ -62,7 +62,7 @@ const FeaturedCarousel = () => {
     const generateDisplayPrice = (ticket_types) => {
         const allAskPrices = ticket_types.flatMap(ticketType => ticketType.user_asks).map(ask => parseFloat(ask.price))
         if (allAskPrices.length > 0) {
-            return "From £" + Math.min(...allAskPrices)
+            return "From £" + Math.min(...allAskPrices).toFixed(2)
         }
         else {
             return "From £"
