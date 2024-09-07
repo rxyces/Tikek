@@ -14,7 +14,70 @@ import PriceIcon from "../assets/svgs/price_icon.svg"
 import LocationIcon from "../assets/svgs/location_icon.svg"
 import RightSelector from "../assets/svgs/right_selector.svg"
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window')
+
+//loading image
+const source = require("../assets/images/loading_placeholder.png")
+
+const generateDisplayPrice = (ticket_types) => {
+    const allAskPrices = ticket_types.flatMap(ticketType => ticketType.user_asks).map(ask => parseFloat(ask.price))
+    if (allAskPrices.length > 0) {
+        return "From £" + Math.min(...allAskPrices).toFixed(2)
+    }
+    else {
+        return "From £"
+    }
+}
+
+const onPress = (itemId) => {
+    router.push({pathname:`/events/${itemId}`})
+}
+
+const renderItem = ({ item }) => (
+    <Pressable
+        style={({pressed}) => ({opacity: pressed ? 0.8 : 1})}
+        className="items-center flex-1"
+        onPress={() => onPress(item.id)}
+        >
+        <View className="w-11/12 flex-1">
+            <View className="h-[170px]">
+                <Image
+                className="flex-1 rounded-xl"
+                source={item.image}
+                contentFit="cover"
+                placeholder={source}
+                />
+            </View>
+            <Text className="font-wsemibold text-[20px] text-[#DFE3EC] my-2" numberOfLines={1} ellipsizeMode='tail'>
+                {item.title}
+            </Text>
+            <View className="">
+                <View className="flex-row gap-2 items-center">
+                    <DateIcon width={24} height={24} />
+                    <Text className="font-wregular text-[16px] text-[#C1C8D7]" numberOfLines={1} ellipsizeMode='tail'>
+                        {format(new Date(item.date), 'MMM, do')}
+                    </Text>
+                </View>
+                <View className="flex-row items-center py-1 justify-between">
+                    <View className="items-center flex-row gap-2">
+                        <PriceIcon width={24} height={24} />
+                        <Text className="font-wregular text-[16px] text-[#C1BBF6]" numberOfLines={1} ellipsizeMode='tail'>
+                            {generateDisplayPrice(item.ticket_types)}
+                        </Text>
+                    </View>
+                    <RightSelector width={24} height={24} />
+                    
+                </View>
+                <View className="flex-row gap-2 items-center">
+                    <LocationIcon width={24} height={24} />
+                    <Text className="font-wmedium text-[16px] text-[#C1C8D7]" numberOfLines={1} ellipsizeMode='tail'>
+                        {item.location}
+                    </Text>
+                </View>
+            </View>
+        </View>
+    </Pressable>
+)
 
 const FeaturedCarousel = () => {
     //states
@@ -24,9 +87,6 @@ const FeaturedCarousel = () => {
     const { setAllEventData } = useAuthenticatedContext()
 
     const isCarousel = useRef(null)
-
-    //loading image
-    const source = require("../assets/images/loading_placeholder.png")
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["category", "Featured"],
@@ -55,67 +115,6 @@ const FeaturedCarousel = () => {
         }
     }, [data, error])
 
-    const onPress = (itemId) => {
-        router.push({pathname:`/events/${itemId}`})
-    }
-
-    const generateDisplayPrice = (ticket_types) => {
-        const allAskPrices = ticket_types.flatMap(ticketType => ticketType.user_asks).map(ask => parseFloat(ask.price))
-        if (allAskPrices.length > 0) {
-            return "From £" + Math.min(...allAskPrices).toFixed(2)
-        }
-        else {
-            return "From £"
-        }
-    }
-
-    const renderItem = ({ item }) => (
-        <Pressable
-            style={({pressed}) => ({opacity: pressed ? 0.8 : 1})}
-            className="items-center flex-1"
-            onPress={() => onPress(item.id)}
-            >
-            <View className="w-11/12 flex-1">
-                <View className="h-[170px]">
-                    <Image
-                    className="flex-1 rounded-xl"
-                    source={item.image}
-                    contentFit="cover"
-                    placeholder={source}
-                    />
-                </View>
-                <Text className="font-wsemibold text-[20px] text-[#DFE3EC] my-2" numberOfLines={1} ellipsizeMode='tail'>
-                    {item.title}
-                </Text>
-                <View className="">
-                    <View className="flex-row gap-2 items-center">
-                        <DateIcon width={24} height={24} />
-                        <Text className="font-wregular text-[16px] text-[#C1C8D7]" numberOfLines={1} ellipsizeMode='tail'>
-                            {format(new Date(item.date), 'MMM, do')}
-                        </Text>
-                    </View>
-                    <View className="flex-row items-center py-1 justify-between">
-                        <View className="items-center flex-row gap-2">
-                            <PriceIcon width={24} height={24} />
-                            <Text className="font-wregular text-[16px] text-[#C1BBF6]" numberOfLines={1} ellipsizeMode='tail'>
-                                {generateDisplayPrice(item.ticket_types)}
-                            </Text>
-                        </View>
-                        <RightSelector width={24} height={24} />
-                        
-                    </View>
-                    <View className="flex-row gap-2 items-center">
-                        <LocationIcon width={24} height={24} />
-                        <Text className="font-wmedium text-[16px] text-[#C1C8D7]" numberOfLines={1} ellipsizeMode='tail'>
-                            {item.location}
-                        </Text>
-                    </View>
-                </View>
-            </View>
-        </Pressable>
-        
-
-    );
     if (error)  {
     return (
         <View className="min-w-[83.3%] h-[360px] rounded-lg border-2 border-[#C6D8FF] justify-center items-center">
