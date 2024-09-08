@@ -13,6 +13,8 @@ import DateIcon from "../assets/svgs/date_icon.svg"
 import PriceIcon from "../assets/svgs/price_icon.svg"
 import LocationIcon from "../assets/svgs/location_icon.svg"
 import RightSelector from "../assets/svgs/right_selector.svg"
+import { eventSelectors } from "../stores/authenticatedSelectors"
+import { useEventStore } from "../stores/authenticatedStore"
 
 const { width: screenWidth } = Dimensions.get('window')
 
@@ -81,6 +83,7 @@ const renderItem = ({ item }) => (
 
 const FeaturedCarousel = () => {
     //states
+    console.log("rendered")
     const [index, setIndex] = useState(0)
 
     //context
@@ -96,7 +99,15 @@ const FeaturedCarousel = () => {
         refetchOnMount: "always",
     });
 
+    const addEvent = useEventStore((state) => state.addEvent)
+    const event = useEventStore((state) => eventSelectors.getEventById("1")(state))
+
     useEffect(() => {
+        const newEvent = { id: '1', name: 'New Event', price: 100 }
+        addEvent(newEvent)
+        console.log(event)
+        console.log("added event 1")
+
         if (data) {
             setAllEventData(prevData => {
                 //updates any returned ids and new ids into the context
