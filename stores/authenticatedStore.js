@@ -10,3 +10,13 @@ export const useEventStore = create((set) => ({
         }
     })),
 }))
+
+export const useTicketStore = create((set) => ({
+    allTicketData: {},
+    addTicket: (ticket) => set((state) => ({
+        allTicketData: {
+            ...state.allEventData,
+            [ticket.id]: ticket
+        }
+    })),
+}))
