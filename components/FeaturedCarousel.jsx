@@ -83,7 +83,8 @@ const renderItem = ({ item }) => (
 
 const FeaturedCarousel = () => {
     //states
-    console.log("rendered")
+    const [eventIds, setEventIds] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
     const [index, setIndex] = useState(0)
 
     //context
@@ -91,7 +92,7 @@ const FeaturedCarousel = () => {
 
     const isCarousel = useRef(null)
 
-    const { data, isLoading, error } = useQuery({
+    const { data, error } = useQuery({
         queryKey: ["category", "Featured"],
         queryFn: () => getEventDataByCategory("Featured"),
         staleTime: 3 * 60 * 1000,
@@ -100,29 +101,21 @@ const FeaturedCarousel = () => {
     });
 
     const addEvent = useEventStore((state) => state.addEvent)
-    const event = useEventStore((state) => eventSelectors.getEventById("1")(state))
+    const addTicket = useEventStore((state) => state.addTicket)
+    const events = useEventStore((state) => eventSelectors.getEventsByIds(eventIds)(state))
 
     useEffect(() => {
-        const newEvent = { id: '1', name: 'New Event', price: 100 }
-        addEvent(newEvent)
-        console.log(event)
-        console.log("added event 1")
-
+        setIsLoading(true)
         if (data) {
-            setAllEventData(prevData => {
-                //updates any returned ids and new ids into the context
-                const updatedData = [...prevData]
-                data.forEach(newItem => {
-                    const existingIndex = updatedData.findIndex(item => item.id === newItem.id);
-                    if (existingIndex !== -1) {
-                        updatedData[existingIndex] = newItem
-                    } 
-                    else {
-                        updatedData.push(newItem)
-                    }
+            data.forEach(newItem => {
+                addEvent(newItem)
+                newItem.ticket_types.forEach(newTicket => {
+                    addTicket(newTicket)
                 })
-                return updatedData
             })
+            const ids = data.map(item => item.id)
+            setEventIds(ids)
+            setIsLoading(false)
         }
     }, [data, error])
 
@@ -173,7 +166,7 @@ const FeaturedCarousel = () => {
                     </View>
                     
                     <Carousel
-                        data={data}
+                        data={events}
                         ref={isCarousel}
                         loop={true}
                         onSnapToItem={(index) => setIndex(index)}

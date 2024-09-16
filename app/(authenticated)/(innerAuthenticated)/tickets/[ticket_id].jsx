@@ -3,6 +3,8 @@ import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 
 import { useAuthenticatedContext } from '../../../../context/AuthenticatedContext';
+import { ticketSelectors, eventSelectors } from "../../../../stores/authenticatedSelectors"
+import { useEventStore } from "../../../../stores/authenticatedStore"
 import Error from '../../../../components/Error';
 import InfoIcon from "../../../../assets/svgs/info_icon.svg"
 import ListingsTable from '../../../../components/ListingsTable';
@@ -19,6 +21,9 @@ const ticketPage = () => {
     const [ errorText, setErrorText ] = useState("")
     const [ isLoading, setIsLoading ] = useState(true)
 
+    const ticket = useEventStore((state) => ticketSelectors.getTicketById(ticket_id)(state))
+    const event = useEventStore((state) => eventSelectors.getEventById(ticket.event_id)(state))
+    //search up is ok for one state tpo be dependant on another
 
     useEffect(() => {
         setErrorText("")
