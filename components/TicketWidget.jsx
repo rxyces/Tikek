@@ -3,13 +3,13 @@ import { router } from 'expo-router'
 
 import StockIcon from "../assets/svgs/stock_icon.svg"
 
-const TicketWidget = ({ticketTypeData, eventId}) => {
+const TicketWidget = ({ticketTypeData}) => {
     return (
         <Pressable
             style={({ pressed }) => [
                 { opacity: pressed ? 0.8 : 1 },
             ]}
-            onPress={() => {router.push({pathname:`/tickets/${ticketTypeData.id}?event_id=${eventId}`})}}>
+            onPress={() => {router.push({pathname:`/tickets/${ticketTypeData.id}`})}}>
             <View className="w-full h-[120px] rounded-lg border-2 border-[#C6D8FF] self-center">
                 <View className="mt-2 mb-4 mx-4 space-y-2">
                     <View className="flex-row justify-between items-center">

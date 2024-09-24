@@ -8,13 +8,12 @@ import { useQuery } from '@tanstack/react-query'
 
 import Error from './Error';
 import { getEventDataByCategory } from '../utils/dataRetrieval';
-import { useAuthenticatedContext } from '../context/AuthenticatedContext';
 import DateIcon from "../assets/svgs/date_icon.svg"
 import PriceIcon from "../assets/svgs/price_icon.svg"
 import LocationIcon from "../assets/svgs/location_icon.svg"
 import RightSelector from "../assets/svgs/right_selector.svg"
 import { eventSelectors } from "../stores/authenticatedSelectors"
-import { useEventStore } from "../stores/authenticatedStore"
+import { useEventStore, useTicketStore } from "../stores/authenticatedStore"
 
 const { width: screenWidth } = Dimensions.get('window')
 
@@ -87,9 +86,6 @@ const FeaturedCarousel = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [index, setIndex] = useState(0)
 
-    //context
-    const { setAllEventData } = useAuthenticatedContext()
-
     const isCarousel = useRef(null)
 
     const { data, error } = useQuery({
@@ -101,7 +97,7 @@ const FeaturedCarousel = () => {
     });
 
     const addEvent = useEventStore((state) => state.addEvent)
-    const addTicket = useEventStore((state) => state.addTicket)
+    const addTicket = useTicketStore((state) => state.addTicket)
     const events = useEventStore((state) => eventSelectors.getEventsByIds(eventIds)(state))
 
     useEffect(() => {

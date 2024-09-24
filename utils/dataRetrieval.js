@@ -61,7 +61,7 @@ export const getRecordsByID = async (id) => {
     }
 }
 
-export const getTicketAsksByEventID = async (id) => {
+export const getTicketByID = async (id) => {
     const { data: ticketData, error: ticketError } = await supabase
     .from("ticket_types")
     .select(`
@@ -69,28 +69,46 @@ export const getTicketAsksByEventID = async (id) => {
         user_asks(*),
         user_offers(*)
         `)
-    .eq("id", id)
+    .eq('id', id)
     
     if (ticketError) {
-        console.error(JSON.stringify(eventsError))
-        return {data: null, error: "Failed fetching tickets, reload"}
+        throw new Error(ticketError.details)
     } 
     else {
-        return {data: ticketData, error: null}
+        return ticketData
     }
 }
 
-export const getTicketTypeByEventID = async (id) => {
-    const { data: ticketData, error: ticketError } = await supabase
-    .from("ticket_types")
-    .select("*")
-    .eq("event_id", id)
+// export const getTicketAsksByEventID = async (id) => {
+//     const { data: ticketData, error: ticketError } = await supabase
+//     .from("ticket_types")
+//     .select(`
+//         *,
+//         user_asks(*),
+//         user_offers(*)
+//         `)
+//     .eq("id", id)
     
-    if (ticketError) {
-        console.error(JSON.stringify(eventsError))
-        return {data: null, error: "Failed fetching ticket types, reload"}
-    } 
-    else {
-        return {data: ticketData, error: null}
-    }
-}
+//     if (ticketError) {
+//         console.error(JSON.stringify(eventsError))
+//         return {data: null, error: "Failed fetching tickets, reload"}
+//     } 
+//     else {
+//         return {data: ticketData, error: null}
+//     }
+// }
+
+// export const getTicketTypeByEventID = async (id) => {
+//     const { data: ticketData, error: ticketError } = await supabase
+//     .from("ticket_types")
+//     .select("*")
+//     .eq("event_id", id)
+    
+//     if (ticketError) {
+//         console.error(JSON.stringify(eventsError))
+//         return {data: null, error: "Failed fetching ticket types, reload"}
+//     } 
+//     else {
+//         return {data: ticketData, error: null}
+//     }
+// }

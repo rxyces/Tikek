@@ -1,59 +1,55 @@
 import { View, Text, SafeAreaView, Pressable, StyleSheet } from 'react-native'
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query'
 
-import { useAuthenticatedContext } from '../../../../context/AuthenticatedContext';
 import { ticketSelectors, eventSelectors } from "../../../../stores/authenticatedSelectors"
-import { useEventStore } from "../../../../stores/authenticatedStore"
+import { useEventStore, useTicketStore } from "../../../../stores/authenticatedStore"
+import { getTicketByID, getRecordsByID } from '../../../../utils/dataRetrieval';
 import Error from '../../../../components/Error';
 import InfoIcon from "../../../../assets/svgs/info_icon.svg"
 import ListingsTable from '../../../../components/ListingsTable';
 
 const ticketPage = () => {
-    const { ticket_id, event_id} = useLocalSearchParams();
-
-    //context
-    const { allEventData } = useAuthenticatedContext()
+    const { ticket_id } = useLocalSearchParams();
 
     //states
-    const [ ticketData, setTicketData ] = useState(null)
-    const [ eventData, setEventData ] = useState(null)
-    const [ errorText, setErrorText ] = useState("")
-    const [ isLoading, setIsLoading ] = useState(true)
+    const [existsInStore, setExistsInStore] = useState(true)
 
-    const ticket = useEventStore((state) => ticketSelectors.getTicketById(ticket_id)(state))
+    const { data: ticketData, isLoading: ticketLoading, error: ticketError } = useQuery({
+        queryKey: ["ticketID", ticket_id],
+        queryFn: () => getTicketByID(ticket_id),
+        staleTime: 3 * 60 * 1000,
+        refetchInterval: 300000,
+        enabled: !existsInStore, //as this is true its disabled off load so will only make the req if state is updated
+    });
+
+    const retrievedEventId = ticketData? ticketData[0].event_id : undefined
+
+    const { data: eventData, isLoading: eventLoading, error: eventError } = useQuery({
+        queryKey: ["eventID", retrievedEventId],
+        queryFn: () => getRecordsByID(retrievedEventId),
+        staleTime: 3 * 60 * 1000,
+        refetchInterval: 300000,
+        enabled: !!retrievedEventId, //only runs if ticketdata had to be fetched meaning the whole event needs to be fetched as well
+    });
+
+    const ticket = useTicketStore((state) => ticketSelectors.getTicketById(ticket_id)(state))
     const event = useEventStore((state) => eventSelectors.getEventById(ticket.event_id)(state))
-    //search up is ok for one state tpo be dependant on another
-
+    const addEvent = useEventStore((state) => state.addEvent)
+    const addTicket = useTicketStore((state) => state.addTicket)
+    
     useEffect(() => {
-        setErrorText("")
-        setIsLoading(true)
-        //impossible for ticket and event data to not exist in context as to get teh ticket id to access the page you must request the event first
-        if (!event_id) {
-            let eventIndex = 0
-            while (eventIndex < allEventData.length) {
-                const foundMatchingTicket = allEventData[eventIndex].ticket_types.find(ticketType => ticketType.id == ticket_id)
-                if (foundMatchingTicket) {
-                    setTicketData(foundMatchingTicket)
-                    setEventData(allEventData[eventIndex])
-
-                    eventIndex = allEventData.length + 1
-                }
-                else {
-                    eventIndex += 1
-                }
-            }
-            if (eventIndex != allEventData.length + 1) {
-                setErrorText("Error, failed finding ticket and event data")
+        //if it dosent exist in the store get the whole event since ill need the event data later anyway so get whole evnt data including the specific ticket stuff
+        if (!ticket) {
+            setExistsInStore(false)
+            if (ticketData && eventData) {
+                addEvent(eventData[0])
+                addTicket(ticketData[0])
+                setExistsInStore(true)
             }
         }
-        else {
-            const currentEventData = allEventData.find(event => event.id == event_id)
-            setEventData(currentEventData)
-            setTicketData(currentEventData.ticket_types.find(ticketType => ticketType.id == ticket_id))
-        }
-        setIsLoading(false)
-    }, [])
+    }, [ticketData, eventData, eventError, ticketError])
 
     const generateDisplayPrice = (listingData) => {
         const allPrices = listingData.flatMap(listing => parseFloat(listing.price))
@@ -65,14 +61,14 @@ const ticketPage = () => {
         }
     }
     
-    if (errorText)  {
+    if (ticketError || eventError)  {
         return (
             <View className="flex-1 justify-center items-center">
-                <Error errorText={errorText}/>
+                <Error errorText={ticketError + eventError}/>
             </View>
         )
         }
-    else if (isLoading) {
+    else if (eventLoading || ticketLoading || !ticket || !event) {
         return (
             <View className="flex-1 justify-center items-center">
             </View>
@@ -85,10 +81,10 @@ const ticketPage = () => {
                     <View className="flex-1 w-5/6">
                         <View className="space-y-1">
                             <Text className="font-wsemibold text-[#DFE3EC] text-[20px] text-center" numberOfLines={1} ellipsizeMode='tail'>
-                                {ticketData.name + " ticket"}
+                                {ticket.name + " ticket"}
                             </Text>
                             <Text className="font-wmedium text-[#C1C8D7] text-[18px] text-center" numberOfLines={2} ellipsizeMode='tail'>
-                                {eventData.title}
+                                {event.title}
                             </Text>
                         </View>
 
@@ -108,7 +104,7 @@ const ticketPage = () => {
                         </Pressable>
 
                         <View className="mt-2">
-                            <ListingsTable listingData={ticketData.user_asks} ascending={true}/>
+                            <ListingsTable listingData={ticket.user_asks} ascending={true}/>
                         </View>
                         
                         <Pressable
@@ -127,7 +123,7 @@ const ticketPage = () => {
                         </Pressable>
 
                         <View className="mt-2">
-                            <ListingsTable listingData={ticketData.user_offers} ascending={false}/>
+                            <ListingsTable listingData={ticket.user_offers} ascending={false}/>
                         </View>
 
                         <View className="flex-1 justify-between mb-20 items-end flex-row">
@@ -147,7 +143,7 @@ const ticketPage = () => {
                                             </Text>
                                         </View>
                                         <Text className="font-wsemibold text-[24px] text-white">
-                                            {generateDisplayPrice(ticketData.user_offers)}
+                                            {generateDisplayPrice(ticket.user_offers)}
                                         </Text>
                                     </View>
                                     
@@ -170,7 +166,7 @@ const ticketPage = () => {
                                             </Text>
                                         </View>
                                         <Text className="font-wsemibold text-[24px] text-white">
-                                        {generateDisplayPrice(ticketData.user_asks)}
+                                        {generateDisplayPrice(ticket.user_asks)}
                                         </Text>
                                     </View>
                                     

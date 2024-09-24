@@ -15,10 +15,11 @@ import { LinearGradient } from 'expo-linear-gradient'
 import MaskedView from '@react-native-masked-view/masked-view'
 import { useQuery } from '@tanstack/react-query'
 
+import { useEventStore, useTicketStore } from '../../../../stores/authenticatedStore';
+import { eventSelectors } from '../../../../stores/authenticatedSelectors';
 import Error from '../../../../components/Error';
 import TicketWidget from '../../../../components/TicketWidget';
 import { getRecordsByID } from '../../../../utils/dataRetrieval';
-import { useAuthenticatedContext } from '../../../../context/AuthenticatedContext';
 import DateIcon from "../../../../assets/svgs/date_icon.svg"
 import LocationIcon from "../../../../assets/svgs/location_icon.svg"
 import OrganiserIcon from "../../../../assets/svgs/organiser_icon.svg"
@@ -36,12 +37,8 @@ const eventPage = () => {
 
     //states
     const [expandedDetails, setExpandedDetails] = useState(false)
-    const [existsInContext, setExistsInContext] = useState(true) //true by default so it dosent send req on load before the states have had time to check
-    const [eventData, setEventData] = useState(null)
+    const [existsInStore, setExistsInStore] = useState(true) //true by default so it dosent send req on load before the states have had time to check
     const [refreshing, setRefreshing] = useState(false);
-
-    //context
-    const { allEventData, setAllEventData } = useAuthenticatedContext()
 
     //loading image
     const source = require("../../../../assets/images/loading_placeholder.png")
@@ -83,57 +80,33 @@ const eventPage = () => {
         queryFn: () => getRecordsByID(event_id),
         staleTime: 3 * 60 * 1000,
         refetchInterval: 300000,
-        enabled: !existsInContext, //as this is true its disabled off load so will only make the req if state is updated
+        enabled: !existsInStore, //as this is true its disabled off load so will only make the req if state is updated
     });
 
+    const event = useEventStore((state) => eventSelectors.getEventById(event_id)(state))
+    const addEvent = useEventStore((state) => state.addEvent)
+    const addTicket = useTicketStore((state) => state.addTicket)
+
     useEffect(() => {
-        const currentEventData = allEventData.find(event => event.id == event_id) //check if event already exists in the context
-        if (currentEventData) {
-            //if it does exist in the context then no need to fetch it again
-            setEventData(currentEventData)
-            setExistsInContext(true)
-        }
-        else {
-            setExistsInContext(false)
-            //on first load where its not in context the state is updated and there wont be data yet because the req hasnt picked up the new state yet so it will end there and re run once req has been made and correctly add to context
+        //event dosent exist in store so load it up
+        if (!event) {
+            setExistsInStore(false)
             if (data) {
-                setEventData(data[0])
-                setAllEventData(prevData => {
-                    //updates any returned ids and new ids into the context
-                    const updatedData = [...prevData]
-                    data.forEach(newItem => {
-                        const existingIndex = updatedData.findIndex(item => item.id === newItem.id);
-                        if (existingIndex !== -1) {
-                            updatedData[existingIndex] = newItem
-                        } 
-                        else {
-                            updatedData.push(newItem)
-                        }
-                    })
-                    return updatedData
+                addEvent(data[0])
+                data[0].ticket_types.forEach(newTicket => {
+                    addTicket(newTicket)
                 })
-                setExistsInContext(true)
+                setExistsInStore(true)
             }
         }
+        //if refreshing and the new refetched data has loaded in then reset the stores to prevent a blank loading state transition
         if (refreshing && data) {
-            //for when you initate refresh and the new data has been loaded 
-            setEventData(data[0])
-            setAllEventData(prevData => {
-                //updates any returned ids and new ids into the context
-                const updatedData = [...prevData]
-                data.forEach(newItem => {
-                    const existingIndex = updatedData.findIndex(item => item.id === newItem.id);
-                    if (existingIndex !== -1) {
-                        updatedData[existingIndex] = newItem
-                    } 
-                    else {
-                        updatedData.push(newItem)
-                    }
-                })
-                return updatedData
+            addEvent(data[0])
+            data[0].ticket_types.forEach(newTicket => {
+                addTicket(newTicket)
             })
-            setExistsInContext(true)
-        }
+            setExistsInStore(true)
+        } 
     }, [data, error])
 
     if (error)  {
@@ -143,7 +116,7 @@ const eventPage = () => {
             </View>
         )
         }
-    else if (isLoading || !eventData) {
+    else if (isLoading || !event) {
         return (
             <SafeAreaView>
                 <ScrollView>
@@ -251,39 +224,39 @@ const eventPage = () => {
                             <View className="h-[170px] border-2 border-[#C6D8FF] rounded-xl">
                                 <Image
                                 className="flex-1 rounded-xl"
-                                source={eventData ? eventData.image : source}
+                                source={event ? event.image : source}
                                 contentFit="cover"
                                 placeholder={source}
                                 />
                             </View>
 
                             <Text className="font-wsemibold text-[#DFE3EC] text-[20px] mt-4" numberOfLines={2} ellipsizeMode='tail'>
-                                {eventData.title}
+                                {event.title}
                             </Text>
 
                             <View className="space-y-0 mt-4">
                                 <View className="flex-row gap-2 items-center">
                                     <DateIcon width={24} height={24} />
                                     <Text className="font-wmedium text-[18px] text-[#C1C8D7]" numberOfLines={1} ellipsizeMode='tail'>
-                                        {eventData?.location ? format(new Date(eventData.date), 'MMM, do') : "---"}
+                                        {event?.location ? format(new Date(event.date), 'MMM, do') : "---"}
                                     </Text>
                                 </View>
                                 <View className="flex-row gap-2 items-center">
                                     <LocationIcon width={24} height={24} />
                                     <Text className="font-wmedium text-[18px] text-[#C1C8D7]" numberOfLines={1} ellipsizeMode='tail'>
-                                        {eventData?.location || "---"} 
+                                        {event?.location || "---"} 
                                     </Text>
                                 </View>
                                 <View className="flex-row gap-2 items-center">
                                     <OrganiserIcon width={24} height={24} />
                                     <Text className="font-wmedium text-[18px] text-[#C1C8D7]" numberOfLines={1} ellipsizeMode='tail'>
-                                        {eventData?.organiser || "---"} 
+                                        {event?.organiser || "---"} 
                                     </Text>
                                 </View>
                                 <View className="flex-row gap-2 items-center">
                                     <UrlIcon width={24} height={24} />
                                     <Text className="font-wmedium text-[18px] text-[#C1C8D7] underline">
-                                        <A href={eventData?.original_url || "---"}>Event URL</A>
+                                        <A href={event?.original_url || "---"}>Event URL</A>
                                     </Text>
                                 </View>
                             </View>
@@ -319,7 +292,7 @@ const eventPage = () => {
                                 <MaskedView 
                                 maskElement={
                                 <Text className="font-wregular text-[16px] bg-transparent" numberOfLines={100} ellipsizeMode='tail'>
-                                    {eventData?.details || "---"}
+                                    {event?.details || "---"}
                                 </Text>
                                 }>
                                     <LinearGradient
@@ -329,7 +302,7 @@ const eventPage = () => {
                                     >
                                         <Animated.View className="opacity-0" style={detailsAnimatedStyle}>
                                             <Text className="font-wregular text-[16px] text-[#C1C8D7]" numberOfLines={100} ellipsizeMode='tail'>
-                                                {eventData?.details || "---"}
+                                                {event?.details || "---"}
                                             </Text>
                                         </Animated.View>
                                     </LinearGradient>
@@ -351,12 +324,12 @@ const eventPage = () => {
                             </Animated.View>
 
                             <Animated.View layout={LinearTransition} className="mt-4">
-                                {eventData.ticket_types
+                                {event.ticket_types
                                 .sort((a, b) => b.user_asks.length - a.user_asks.length) //sort descending order
                                 .map(ticketType => ( 
                                     // for spacing between elements
                                     <View key={ticketType.id} className="mb-4"> 
-                                        <TicketWidget ticketTypeData={ticketType} eventId={eventData.id}/> 
+                                        <TicketWidget ticketTypeData={ticketType}/> 
                                     </View>
                                 ))}
                                 
