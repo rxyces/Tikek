@@ -38,6 +38,8 @@ const ticketPage = () => {
     const event = useEventStore((state) => eventSelectors.getEventById(ticket.event_id)(state))
     const addEvent = useEventStore((state) => state.addEvent)
     const addTicket = useTicketStore((state) => state.addTicket)
+    const ticketHighestOffer = useTicketStore((state) => ticketSelectors.getTicketHighestOffer(ticket_id)(state))
+    const ticketLowestAsk = useTicketStore((state) => ticketSelectors.getTicketLowestAsk(ticket_id)(state))
     
     useEffect(() => {
         //if it dosent exist in the store get the whole event since ill need the event data later anyway so get whole evnt data including the specific ticket stuff
@@ -143,7 +145,7 @@ const ticketPage = () => {
                                             </Text>
                                         </View>
                                         <Text className="font-wsemibold text-[24px] text-white">
-                                            {generateDisplayPrice(ticket.user_offers)}
+                                            {ticketHighestOffer == "---" ? ticketHighestOffer : "£" + ticketHighestOffer}
                                         </Text>
                                     </View>
                                     
@@ -166,7 +168,7 @@ const ticketPage = () => {
                                             </Text>
                                         </View>
                                         <Text className="font-wsemibold text-[24px] text-white">
-                                        {generateDisplayPrice(ticket.user_asks)}
+                                        {ticketLowestAsk == "---" ? ticketLowestAsk : "£" + ticketLowestAsk}
                                         </Text>
                                     </View>
                                     

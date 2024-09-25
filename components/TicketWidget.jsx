@@ -2,8 +2,13 @@ import { View, Text, Pressable } from 'react-native'
 import { router } from 'expo-router'
 
 import StockIcon from "../assets/svgs/stock_icon.svg"
+import { useTicketStore } from '../stores/authenticatedStore'
+import { ticketSelectors } from '../stores/authenticatedSelectors'
 
 const TicketWidget = ({ticketTypeData}) => {
+    const ticketHighestOffer = useTicketStore((state) => ticketSelectors.getTicketHighestOffer(ticketTypeData.id)(state))
+    const ticketLowestAsk = useTicketStore((state) => ticketSelectors.getTicketLowestAsk(ticketTypeData.id)(state))
+
     return (
         <Pressable
             style={({ pressed }) => [
@@ -30,7 +35,7 @@ const TicketWidget = ({ticketTypeData}) => {
                                 Lowest ask
                             </Text>
                             <Text className="font-wsemibold text-[24px] text-white">
-                                {ticketTypeData.user_asks.length == 0 ? "---" : "£" + Math.min(...ticketTypeData.user_asks.map(ask => parseFloat(ask.price))).toFixed(2)}
+                                {ticketLowestAsk == "---" ? ticketLowestAsk : "£" + ticketLowestAsk}
                             </Text>
                         </View>
 
@@ -39,7 +44,7 @@ const TicketWidget = ({ticketTypeData}) => {
                                 Highest offer
                             </Text>
                             <Text className="font-wsemibold text-[24px] text-white">
-                            {ticketTypeData.user_asks.length == 0 ? "---" : "£" + Math.max(...ticketTypeData.user_offers.map(ask => parseFloat(ask.price))).toFixed(2)}
+                                {ticketHighestOffer == "---" ? ticketHighestOffer : "£" + ticketHighestOffer}
                             </Text>
                         </View>
                     </View>
