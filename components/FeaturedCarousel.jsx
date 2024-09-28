@@ -36,7 +36,11 @@ const onPress = (itemId) => {
 
 const renderItem = ({ item }) => (
     <Pressable
-        style={({pressed}) => ({opacity: pressed ? 0.8 : 1})}
+        style={({ pressed }) => ({
+            opacity: pressed ? 0.8 : 1,
+            flex: 1,
+            alignItems: 'center'
+        })}
         className="items-center flex-1"
         onPress={() => onPress(item.id)}
         >
