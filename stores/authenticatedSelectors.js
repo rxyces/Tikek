@@ -7,6 +7,17 @@ export const eventSelectors = {
     getEventsByIds: (eventIds) => (state) => {
         return eventIds.map(eventId => state.allEventData[eventId]).filter(Boolean)
     },
+    getLowestBuyPrice: (eventId) => (state) => {
+        const event = state.allEventData[eventId]
+
+        const allAskPrices = event.ticket_types.flatMap(ticketType => ticketType.user_asks).map(ask => parseFloat(ask.price))
+        if (allAskPrices.length > 0) {
+            return Math.min(...allAskPrices).toFixed(2)
+        }
+        else {
+            return null
+        }
+    }
 }
 
 export const ticketSelectors = {
