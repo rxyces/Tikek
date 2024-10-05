@@ -11,17 +11,6 @@ import { useEventStore, useTicketStore } from "../stores/authenticatedStore"
 
 const { width: screenWidth } = Dimensions.get('window')
 
-
-const generateDisplayPrice = (ticket_types) => {
-    const allAskPrices = ticket_types.flatMap(ticketType => ticketType.user_asks).map(ask => parseFloat(ask.price))
-    if (allAskPrices.length > 0) {
-        return "From £" + Math.min(...allAskPrices).toFixed(2)
-    }
-    else {
-        return "From £"
-    }
-}
-
 const FeaturedCarousel = () => {
     //states
     const [eventIds, setEventIds] = useState([])

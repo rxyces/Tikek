@@ -19,6 +19,7 @@ import { useEventStore, useTicketStore } from '../../../../stores/authenticatedS
 import { eventSelectors } from '../../../../stores/authenticatedSelectors';
 import Error from '../../../../components/Error';
 import TicketWidget from '../../../../components/TicketWidget';
+import AddTicketTypeWidget from '../../../../components/AddTicketType';
 import { getRecordsByID } from '../../../../utils/dataRetrieval';
 import DateIcon from "../../../../assets/svgs/date_icon.svg"
 import LocationIcon from "../../../../assets/svgs/location_icon.svg"
@@ -238,7 +239,7 @@ const eventPage = () => {
                                 <View className="flex-row gap-2 items-center">
                                     <DateIcon width={24} height={24} />
                                     <Text className="font-wmedium text-[18px] text-[#C1C8D7]" numberOfLines={1} ellipsizeMode='tail'>
-                                        {event?.location ? format(new Date(event.date), 'MMM, do') : "---"}
+                                        {event?.date ? format(new Date(event.date), 'MMM, do') : "---"}
                                     </Text>
                                 </View>
                                 <View className="flex-row gap-2 items-center">
@@ -332,6 +333,7 @@ const eventPage = () => {
                                         <TicketWidget ticketTypeData={ticketType}/> 
                                     </View>
                                 ))}
+                                <AddTicketTypeWidget eventData={{id: "123"}}/>
                                 
                             </Animated.View>
                         </View>

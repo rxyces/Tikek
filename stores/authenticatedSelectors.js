@@ -21,7 +21,7 @@ export const eventSelectors = {
 }
 
 export const ticketSelectors = {
-    allEventData: (state) => state.allTicketData,
+    allTicketData: (state) => state.allTicketData,
     getTicketById: (ticketId) => (state) => state.allTicketData[ticketId],
     getTicketHighestOffer: (ticketId) => (state) => {
         const ticket = state.allTicketData[ticketId]

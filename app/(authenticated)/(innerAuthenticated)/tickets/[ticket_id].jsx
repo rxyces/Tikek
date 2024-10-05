@@ -2,6 +2,7 @@ import { View, Text, SafeAreaView, Pressable, StyleSheet } from 'react-native'
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query'
+import { router } from 'expo-router';
 
 import { ticketSelectors, eventSelectors } from "../../../../stores/authenticatedSelectors"
 import { useEventStore, useTicketStore } from "../../../../stores/authenticatedStore"
@@ -52,16 +53,6 @@ const ticketPage = () => {
             }
         }
     }, [ticketData, eventData, eventError, ticketError])
-
-    const generateDisplayPrice = (listingData) => {
-        const allPrices = listingData.flatMap(listing => parseFloat(listing.price))
-        if (allPrices.length > 0) {
-            return "£" + Math.min(...allPrices).toFixed(2)
-        }
-        else {
-            return "---"
-        }
-    }
     
     if (ticketError || eventError)  {
         return (
@@ -156,7 +147,7 @@ const ticketPage = () => {
                             style={({ pressed }) => [
                                 { opacity: pressed ? 0.8 : 1 },
                             ]}
-                            onPress={() => {}}>
+                            onPress={() => {router.push("/buying_ticket/1")}}>
                                 <View className={`justify-center items-center min-w-[45%] min-h-[55px] max-h-[55px] rounded-2xl`} style={[styles.buyShadow, { backgroundColor: "#791DF3" }]}>
                                     <View className="flex-row items-center gap-2">
                                         <View>
