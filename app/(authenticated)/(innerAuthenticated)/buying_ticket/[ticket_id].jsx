@@ -13,6 +13,7 @@ import Animated, {
     useAnimatedStyle,
     Easing,
 } from 'react-native-reanimated';
+import { Image } from 'expo-image';
 
 import { ticketSelectors, eventSelectors } from "../../../../stores/authenticatedSelectors"
 import { useEventStore, useTicketStore } from "../../../../stores/authenticatedStore"
@@ -24,6 +25,10 @@ import TicketTypeIcon from "../../../../assets/svgs/ticket_type_icon.svg"
 import DownSelector from  "../../../../assets/svgs/down_selector.svg"
 import AddPriceIcon from "../../../../assets/svgs/add_price_icon.svg"
 import MinusIcon from "../../../../assets/svgs/minus_icon.svg"
+import RightSelector from "../../../../assets/svgs/right_selector.svg"
+
+
+import ApplePay from "../../../../assets/svgs/apple_pay.svg"
 
 const buyTicketPage = () => {
     const { ticket_id } = useLocalSearchParams();
@@ -91,8 +96,26 @@ const buyTicketPage = () => {
     
     useEffect(() => {
         //set the initial display price and never update from store again since user should now be changing the prices
-        setDisplayPrice(ticketLowestAsk)
-    }, [])
+        if (!displayPrice) {
+            setDisplayPrice(ticketLowestAsk)
+        }
+        else {
+            if (displayPrice == ticketLowestAsk) {
+                setDisplayText("Buy a ticket now at this price")
+            }
+            else {
+                const offersAhead = ticket.user_offers.filter(offer => {
+                    return parseFloat(offer.price) >= displayPrice
+                })
+                if (offersAhead.length == 0) {
+                    setDisplayText("You are the highest offer!")
+                }
+                else {
+                    setDisplayText(offersAhead.length == 1 ? offersAhead.length + " offer ahead at this price" : offersAhead.length + " offers ahead at this price")
+                }
+            }
+        }
+    }, [displayPrice])
 
     useEffect(() => {
         //if it dosent exist in the store get the whole event since ill need the event data later anyway so get whole evnt data including the specific ticket stuff
@@ -110,18 +133,6 @@ const buyTicketPage = () => {
         if (displayPrice <= 0.50) {
             return
         }
-
-        let newPrice = displayPrice - 0.50
-        if (newPrice == ticketLowestAsk) {
-            setDisplayText("Buy a ticket now at this price")
-        }
-        else {
-            const offersAhead = ticket.user_offers.filter(offer => {
-                return parseFloat(offer.price) >= newPrice
-            })
-            setDisplayText(offersAhead.length == 1 ? offersAhead.length + " offer ahead at this price" : offersAhead.length + " offers ahead at this price")
-        }
-
         setDisplayPrice(prevPrice => parseFloat(prevPrice) - 0.50)
     }
 
@@ -129,18 +140,6 @@ const buyTicketPage = () => {
         if (displayPrice == ticketLowestAsk) {
             return
         }
-
-        let newPrice = displayPrice + 0.50
-        if (newPrice == ticketLowestAsk) {
-            setDisplayText("Buy a ticket now at this price")
-        }
-        else {
-            const offersAhead = ticket.user_offers.filter(offer => {
-                return parseFloat(offer.price) >= newPrice
-            })
-            setDisplayText(offersAhead.length == 1 ? offersAhead.length + " offer ahead at this price" : offersAhead.length + " offers ahead at this price")
-        }
-
         setDisplayPrice(prevPrice => parseFloat(prevPrice) + 0.50)
     }
     
@@ -200,7 +199,7 @@ const buyTicketPage = () => {
                                     flexDirection: 'row',
                                     alignItems: 'flex-end',
                                     justifyContent: 'space-between',
-                                    marginTop: 24,
+                                    marginTop: 8,
                                     paddingVertical: 32,
                                     marginVertical: -32,
                                 })}
@@ -243,8 +242,8 @@ const buyTicketPage = () => {
                                 </MaskedView>
                             </View>
                             
-                            <View className="self-center space-y-2 items-center justify-center">
-                                <View className="mt-8 rounded-xl bg-[#24242D] min-h-[60px] max-w-[75%]">
+                            <View className="self-center space-y-2 items-center justify-center mt-2">
+                                <View className="rounded-xl bg-[#24242D] min-h-[60px] max-w-[75%]">
                                     <View className="mx-4 flex-row items-center justify-between">
                                         <Pressable
                                             style={({ pressed }) => ({
@@ -289,6 +288,36 @@ const buyTicketPage = () => {
                                 </Text>
                             </View>
                             
+                            <View className="mt-8 items-center justify-center space-y-2">
+                                <Text className="font-wregular text-[10px] text-[#ADB3C1]">
+                                    Verify event details on the source website before continuing
+                                </Text>
+
+                                <View className="rounded-lg border-2 border-[#C6D8FF] h-[265px] w-full items-center">
+                                    <View className="max-w-[90%] w-[85%] my-4">
+                                        <View className="flex-row justify-between items-center">
+                                            <Text className="font-wsemibold text-[16px] text-[#DFE3EC]">
+                                                Payment
+                                            </Text>
+
+                                            <View className="flex-row items-center justify-center space-x-1">
+                                                <ApplePay width={60} height={25} />
+                                                <RightSelector width={24} height={24} />
+                                            </View>
+                                        </View>
+
+                                        <View className="flex-row justify-between items-center mt-4 pb-2 border-b-2 border-[#C6D8FF]">
+                                            <Text className="font-wsemibold text-[16px] text-[#DFE3EC]">
+                                                Standard ticket
+                                            </Text>
+                                            <Text className="font-wsemibold text-[16px] text-[#DFE3EC]">
+                                                £3.50
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    
+                                </View>
+                            </View>
 
                         </View>
                     </View>
